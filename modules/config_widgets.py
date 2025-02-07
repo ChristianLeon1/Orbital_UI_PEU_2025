@@ -99,7 +99,7 @@ class WidgetsIn(QMainWindow):
         
         #Sensores 
         self.frame_sensores = CustomFrame(parent=self, background="#151515")
-        self.velocidad_label = CustomLabel("TIEMPO LANZAMIENTO:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
+        self.velocidad_label = CustomLabel("T L:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.contador_paquetes_label = CustomLabel("C P:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.hora_label = CustomLabel("HORA:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.bateria_label = CustomLabel("BATERIA:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
@@ -125,10 +125,7 @@ class WidgetsIn(QMainWindow):
         # self.tab_cont.addTab(self.tab_GPS,"GPS")
         # self.tab_cont.addTab(self.tab_serial_monitor,"Monitor Serial")
         #
-        # #Tab Graficas
-        # self.tab_graphs.setStyleSheet("border-radius: 5px;")
-
-        self.altura_frame = CustomFrame(parent=self, background="#151515")
+        # Graficas 
         self.temp_frame = CustomFrame(parent=self, background="#151515") 
         self.carbono_frame = CustomFrame(parent=self, background="#151515") 
         self.presion_frame = CustomFrame(parent=self, background="#151515")
@@ -145,16 +142,16 @@ class WidgetsIn(QMainWindow):
         self.carbono.setYRange(0,5)
         self.temp.setYRange(0,40)
         self.presion.setYRange(75000,80000)
-        #
-        # #Tab GPS
+
+        # GPS
         self.gps_frame = CustomFrame(self,"#151515")
         self.gps_w = QWebEngineView(self.gps_frame)
         self.maps = folium.Map(location = [19.4284, -99.1276], zoom_start=4)
         self.gps_w.setHtml(self.maps.get_root().render())
-        # self.leyenda = QLabel(self.gps_frame)
-        # self.leyenda.setPixmap(QPixmap("images/Leyenda.png"))
-        # self.leyenda.setScaledContents(True)
-        #
+
+        # Simulación 3D 
+        self.simulacion_frame = CustomFrame(self, "#151515")
+
         # #Tab monitor serial
         # self.tab_serial_monitor.setStyleSheet("border-radius: 5px;")
         # self.serial_mon_frame = CustomFrame(self.tab_serial_monitor,"#151515")
@@ -183,16 +180,10 @@ class WidgetsIn(QMainWindow):
         width = self.geometry().width()
         height = self.geometry().height()
 
-        #Tab
-        # self.tab_cont.setGeometry(int(width*0.018), int(height*0.28), width -int(width*0.22), int(height*0.67))
-        # width_f, height_f = self.tab_cont.geometry().width(), self.tab_cont.geometry().height()
-        #
         # #GPS 
-        self.gps_frame.setGeometry(int(0.005*width), int(0.6*height), int(0.41*width), int(0.35*height))
+        self.gps_frame.setGeometry(int(0.005*width), int(0.59*height), int(0.41*width), int(0.36*height))
         self.gps_w.setGeometry(int(0.02*self.gps_frame.geometry().width()), int(0.03*self.gps_frame.geometry().height()), int(0.96*self.gps_frame.geometry().width()), int(0.94*self.gps_frame.geometry().height()))
-        # self.leyenda.setGeometry(int(0.98*self.gps_frame.geometry().width() - 200), int(0.97*self.gps_frame.geometry().height() - 90), 180, 70)
-        # self.gps_frame_datos.setGeometry(int(0.67*width_f), int(0.01*height_f), int(0.29*width_f), int(0.9*height_f) - 31)
-        # 
+        
         # #Monitor Serial
         # self.serial_mon_frame.setGeometry(int(0.01*width_f), int(0.05*height_f), int(0.95*width_f), int(0.9*height_f) - 31)
         # self.serial_monitor.setGeometry(int(self.serial_mon_frame.geometry().width()*0.01), int(self.serial_mon_frame.geometry().height()*0.05), int(self.serial_mon_frame.geometry().width()*0.98), int(self.serial_mon_frame.geometry().height()*0.85))
@@ -204,11 +195,6 @@ class WidgetsIn(QMainWindow):
         self.temp_frame.setGeometry(int(width*0.42), int(height*(0.08 + 0.295)), int(width*(0.24)), int(height*0.28)) 
         self.carbono_frame.setGeometry(int(width*0.42), int(height*(0.08 + 2*0.295)), int(width*(0.24)), int(height*0.28))
  
-        # # Distancia del GPS 
-        # width_f, height_f = self.gps_frame_datos.geometry().width(), self.gps_frame_datos.geometry().height()
-        # self.distancia_cp_obj.setGeometry(int(width_f*0.05), 2*int(height_f/8) - 15, int(width_f*0.5), 30)
-        # self.dis_cp_obj.setGeometry(int(width_f*0.6), 2*int(height_f/8) - 15, int(width_f*0.32), 30)
-
         # Datos de los sensores:  
         self.frame_sensores.setGeometry(int(width*0.762), int(height*0.5), int(width*0.22), int(height*0.45)) 
  
@@ -231,4 +217,8 @@ class WidgetsIn(QMainWindow):
 
         # Espacio para los medidores  
 
-        self.frame_medidores.setGeometry(int(width*0.67), int(height*0.08), int(width*0.312), int(height*0.4))
+        self.frame_medidores.setGeometry(int(width*0.67), int(height*0.08), int(width*0.312), int(height*0.4)) 
+
+        # Simulación 3d 
+
+        self.simulacion_frame.setGeometry(int(0.005*width), int(0.08*height), int(0.41*width), int(0.5*height))
