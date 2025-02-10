@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# AÑO: 2024 CREADOR: Christian Yael Ramírez León
+# AÑO: 2025 CREADOR: Christian Yael Ramírez León
 
 from PySide6.QtCore import QSize, Qt 
 from PySide6.QtGui import QAction, QKeySequence, QPixmap, QResizeEvent, Qt
 from PySide6.QtWidgets import QMainWindow, QToolBar, QComboBox, QLabel, QStatusBar, QFrame, QTabWidget, QVBoxLayout, QLineEdit, QTextEdit, QPushButton
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from modules.tab_style import ColorTab
+from modules.tab_style import ColorTab 
 from modules.custom_widgets import *
-import folium
-
+from modules.gaugemeter import AnalogGaugeWidget
+from modules.compass import Compass
+import folium 
 class WidgetsIn(QMainWindow): 
     def IncluirWidgetsConfig(self): 
 
@@ -99,13 +100,13 @@ class WidgetsIn(QMainWindow):
         
         #Sensores 
         self.frame_sensores = CustomFrame(parent=self, background="#151515")
-        self.velocidad_label = CustomLabel("T L:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
+        self.tiempo_vuelo_label = CustomLabel("T V:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.contador_paquetes_label = CustomLabel("C P:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.hora_label = CustomLabel("HORA:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.bateria_label = CustomLabel("BATERIA:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.estado_label = CustomLabel("ESTADO:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
 
-        self.velocidad = CustomLabel(parent=self.frame_sensores)
+        self.tiempo_vuelo = CustomLabel(parent=self.frame_sensores)
         self.contador_paquetes = CustomLabel(parent=self.frame_sensores)
         self.hora = CustomLabel(parent=self.frame_sensores)
         self.bateria = CustomLabel(parent=self.frame_sensores)
@@ -114,17 +115,21 @@ class WidgetsIn(QMainWindow):
         self.altura_cp = AltitudeWidget(parent=self, label="ALTITUD")
 
         self.frame_medidores = CustomFrame(parent=self, background="#151515")
+        self.velocidad_label = CustomLabel("VELOCIDAD", self.frame_medidores, 20, "#151515")
+        self.aceleracion_label = CustomLabel("ACELERACIÓN", self.frame_medidores, 20, "#151515") 
+        self.brujula_label = CustomLabel("BRÚJULA", self.frame_medidores, 20, "#151515") 
+        self.velocidad =CustomLabel("", self.frame_medidores) 
+        self.aceleracion = CustomLabel("", self.frame_medidores)
+        self.brujula = CustomLabel("", self.frame_medidores)
+
+        self.velocimetro = AnalogGaugeWidget(self.frame_medidores) 
+        self.velocimetro.maxValue = 120  
+        self.velocimetro.enable_value_text = False 
+        self.acelerometro = AnalogGaugeWidget(self.frame_medidores) 
+        self.acelerometro.maxValue = 12 
+        self.acelerometro.enable_value_text = False
+        self.brujula_widget = Compass(self.frame_medidores) 
         
-        #Tabs 
-        # self.tab_cont = QTabWidget(self) 
-        # self.tab_graphs = QFrame()
-        # self.tab_GPS = QFrame() 
-        # self.tab_serial_monitor = QFrame()
-        # self.tab_cont.setStyleSheet(ColorTab())
-        # self.tab_cont.addTab(self.tab_graphs, "Sensores")
-        # self.tab_cont.addTab(self.tab_GPS,"GPS")
-        # self.tab_cont.addTab(self.tab_serial_monitor,"Monitor Serial")
-        #
         # Graficas 
         self.temp_frame = CustomFrame(parent=self, background="#151515") 
         self.carbono_frame = CustomFrame(parent=self, background="#151515") 
@@ -196,28 +201,39 @@ class WidgetsIn(QMainWindow):
         self.carbono_frame.setGeometry(int(width*0.42), int(height*(0.08 + 2*0.295)), int(width*(0.24)), int(height*0.28))
  
         # Datos de los sensores:  
-        self.frame_sensores.setGeometry(int(width*0.762), int(height*0.5), int(width*0.22), int(height*0.45)) 
+        self.frame_sensores.setGeometry(int(width*0.762), int(height*0.4), int(width*0.22), int(height*0.55)) 
  
         width_f, height_f = self.frame_sensores.geometry().width(), self.frame_sensores.geometry().height() 
-        self.velocidad_label.setGeometry(int(width_f*0.08), int(height_f/6) - 15, int(width_f*0.38), 30)
+        self.tiempo_vuelo_label.setGeometry(int(width_f*0.08), int(height_f/6) - 15, int(width_f*0.38), 30)
         self.contador_paquetes_label.setGeometry(int(width_f*0.08), 2*int(height_f/6) - 15, int(width_f*0.37), 30)        
         self.hora_label.setGeometry(int(width_f*0.08), 3*int(height_f/6) - 15, int(width_f*0.37), 30)
         self.bateria_label.setGeometry(int(width_f*0.08), 4*int(height_f/6) - 15, int(width_f*0.37), 30)
         self.estado_label.setGeometry(int(width_f*0.08), 5*int(height_f/6) - 15, int(width_f*0.37), 30)
 
-        self.velocidad.setGeometry(int(width_f*0.55), 1*int(height_f/6) - 15, int(width_f*0.35), 30)
+        self.tiempo_vuelo.setGeometry(int(width_f*0.55), 1*int(height_f/6) - 15, int(width_f*0.35), 30)
         self.contador_paquetes.setGeometry(int(width_f*0.55), 2*int(height_f/6) - 15, int(width_f*0.35), 30)
         self.hora.setGeometry(int(width_f*0.55), 3*int(height_f/6) - 15, int(width_f*0.35), 30)
         self.bateria.setGeometry(int(width_f*0.55), 4*int(height_f/6) - 15, int(width_f*0.35), 30)
         self.estado.setGeometry(int(width_f*0.55), 5*int(height_f/6) - 15, int(width_f*0.35), 30)
 
         #Altitud 
-        self.altura_cp.frame.setGeometry(int(width*0.67), int(height*0.5), int(width*0.085), int(height*0.45))
+        self.altura_cp.frame.setGeometry(int(width*0.67), int(height*0.4), int(width*0.085), int(height*0.55))
         self.altura_cp.Resize()
 
         # Espacio para los medidores  
 
-        self.frame_medidores.setGeometry(int(width*0.67), int(height*0.08), int(width*0.312), int(height*0.4)) 
+        self.frame_medidores.setGeometry(int(width*0.67), int(height*0.08), int(width*0.312), int(height*0.3)) 
+        width_f, height_f = self.frame_medidores.geometry().width(), self.frame_medidores.geometry().height() 
+        self.velocimetro.setGeometry(int(width_f*0.03), int(height_f*0.08), int(width_f*0.30), int(height_f*0.6)) 
+        self.velocidad_label.setGeometry(int(width_f*0.03), int(height_f*0.65), int(width_f*0.30), int(30)) 
+        self.velocidad.setGeometry(int(width_f*0.03), int(height_f*0.65) + 35, int(width_f*0.30), int(30)) 
+        self.acelerometro.setGeometry(int(width_f*0.35), int(height_f*0.08), int(width_f*0.30), int(height_f*0.6)) 
+        self.aceleracion_label.setGeometry(int(width_f*0.35), int(height_f*0.65), int(width_f*0.30), int(30)) 
+        self.aceleracion.setGeometry(int(width_f*0.35), int(height_f*0.65) + 35, int(width_f*0.30), int(30)) 
+        self.brujula_widget.setGeometry(int(width_f*0.67), int(height_f*0.08), int(width_f*0.30), int(height_f*0.6)) 
+        self.brujula_label.setGeometry(int(width_f*0.67), int(height_f*0.65), int(width_f*0.30), int(30)) 
+        self.brujula.setGeometry(int(width_f*0.67), int(height_f*0.65) + 35, int(width_f*0.30), int(30)) 
+
 
         # Simulación 3d 
 
