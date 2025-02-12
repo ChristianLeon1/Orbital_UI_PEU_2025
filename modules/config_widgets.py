@@ -125,10 +125,12 @@ class WidgetsIn(QMainWindow):
         self.velocimetro = AnalogGaugeWidget(self.frame_medidores) 
         self.velocimetro.maxValue = 120  
         self.velocimetro.enable_value_text = False 
+        self.velocimetro.setGaugeTheme(2)
         self.acelerometro = AnalogGaugeWidget(self.frame_medidores) 
         self.acelerometro.maxValue = 12 
         self.acelerometro.enable_value_text = False
         self.brujula_widget = Compass(self.frame_medidores) 
+        self.brujula_widget.enable_value_text = False
         
         # Graficas 
         self.temp_frame = CustomFrame(parent=self, background="#151515") 

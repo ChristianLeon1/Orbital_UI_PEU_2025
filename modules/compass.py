@@ -23,7 +23,7 @@ from modules.log import *
 
 
 ################################################################################################
-# Compass CLASS
+# AnalogGaugeWidget CLASS
 ################################################################################################
 class Compass(QWidget):
     """Fetches rows from a Bigtable.
@@ -39,7 +39,7 @@ class Compass(QWidget):
         ################################################################################################
         # DEFAULT TIMER VALUE
         ################################################################################################
-        self.use_timer_event = False
+        self.use_timer_event = False # Revisar para que el timer 
 
         ################################################################################################
         # DEFAULT NEEDLE COLOR
@@ -84,7 +84,7 @@ class Compass(QWidget):
         # DEFAULT MINIMUM AND MAXIMUM VALUE
         ################################################################################################
         self.minValue = 0
-        self.maxValue = 1000
+        self.maxValue = 360
         ################################################################################################
         # DEFAULT START VALUE
         ################################################################################################
@@ -113,20 +113,20 @@ class Compass(QWidget):
         ################################################################################################
         # DEFAULT SCALE VALUE
         ################################################################################################
-        self.scale_angle_start_value = 135
-        self.scale_angle_size = 270
+        self.scale_angle_start_value = 270
+        self.scale_angle_size = 360
 
         self.angle_offset = 0
 
-        self.setScalaCount(10)
-        self.scala_subdiv_count = 5
+        self.setScalaCount(4)   # Divisiones grandes
+        self.scala_subdiv_count = 9 #Divisiones pequeñas 
 
-        self.pen = QPen(QColor(0, 0, 0))
+        self.pen = QPen(QColor(0, 0, 0)) #Color de las divisiones 
 
         ################################################################################################
         # LOAD CUSTOM FONT
         ################################################################################################     
-        QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), 'fonts/Orbitron/Orbitron-VariableFont_wght.ttf') )
+        # QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), 'fonts/Orbitron/Orbitron-VariableFont_wght.ttf') ) #Borrar 
 
         ################################################################################################
         # DEFAULT POLYGON COLOR
@@ -163,32 +163,32 @@ class Compass(QWidget):
         ################################################################################################
         # ENABLE BAR GRAPH BY DEFAULT
         ################################################################################################
-        self.setEnableBarGraph(True)
+        self.setEnableBarGraph(True) # Habilita radio exterior
         ################################################################################################
         # FILL POLYGON COLOR BY DEFAULT
         ################################################################################################
-        self.setEnableScalePolygon(True)
+        self.setEnableScalePolygon(True) # Tambien radio exterior
         ################################################################################################
         # ENABLE CENTER POINTER BY DEFAULT
         ################################################################################################
-        self.enable_CenterPoint = True
+        self.enable_CenterPoint = True #Habilita el circulo del centro
         ################################################################################################
         # ENABLE FINE SCALE BY DEFAULT
         ################################################################################################
-        self.enable_fine_scaled_marker = True
+        self.enable_fine_scaled_marker = True # Habilita las divisiones pequeñas 
         ################################################################################################
         # ENABLE BIG SCALE BY DEFAULT
         ################################################################################################
-        self.enable_big_scaled_marker = True
+        self.enable_big_scaled_marker = True # Habilita las divisiones grandes 
 
         ################################################################################################
         # NEEDLE SCALE FACTOR/LENGTH
         ################################################################################################
-        self.needle_scale_factor = 0.8
+        self.needle_scale_factor = 0.8 #Tamaño de la aguja 
         ################################################################################################
         # ENABLE NEEDLE POLYGON BY DEFAULT
         ################################################################################################
-        self.enable_Needle_Polygon = True
+        self.enable_Needle_Polygon = True # Habilita la aguja 
 
         ################################################################################################
         # ENABLE NEEDLE MOUSE TRACKING BY DEFAULT
@@ -214,7 +214,7 @@ class Compass(QWidget):
         ################################################################################################
         # SET DEFAULT THEME
         ################################################################################################
-        self.setGaugeTheme(0)
+        self.setGaugeTheme(1)
 
         ################################################################################################
         # RESIZE GAUGE
@@ -249,33 +249,17 @@ class Compass(QWidget):
     # GAUGE THEMES
     ################################################################################################
     def setGaugeTheme(self, Theme = 1):
-        if Theme == 0 or Theme == None:
-            self.set_scale_polygon_colors([[.00, Qt.red],
-                                    [.1, Qt.yellow],
-                                    [.15, Qt.green],
-                                    [1, Qt.transparent]])
-
-            self.needle_center_bg = [
-                                    [0, QColor(35, 40, 3, 255)], 
-                                    [0.16, QColor(30, 36, 45, 255)], 
-                                    [0.225, QColor(36, 42, 54, 255)], 
-                                    [0.423963, QColor(19, 23, 29, 255)], 
-                                    [0.580645, QColor(45, 53, 68, 255)], 
-                                    [0.792627, QColor(59, 70, 88, 255)], 
-                                    [0.935, QColor(30, 35, 45, 255)], 
-                                    [1, QColor(35, 40, 3, 255)]
-                                    ]
-
-            self.outer_circle_bg =  [
-                                    [0.0645161, QColor(30, 35, 45, 255)], 
-                                    [0.37788, QColor(57, 67, 86, 255)], 
-                                    [1, QColor(30, 36, 45, 255)]
-                                    ]
-
         if Theme == 1:
-            self.set_scale_polygon_colors([[.75, Qt.red],
-                                     [.5, Qt.yellow],
-                                     [.25, Qt.green]])
+
+
+            self.set_scale_polygon_colors([[.75, QColor(110,110,110,255)]])
+
+            self.needle_center_bg = [
+                                    [0, Qt.white], 
+                                    ]
+
+            self.bigScaleMarker = Qt.black
+            self.fineScaleColor = Qt.black
 
             self.needle_center_bg = [
                                     [0, QColor(35, 40, 3, 255)], 
@@ -289,285 +273,12 @@ class Compass(QWidget):
                                     ]
 
             self.outer_circle_bg =  [
-                                    [0.0645161, QColor(30, 35, 45, 255)], 
-                                    [0.37788, QColor(57, 67, 86, 255)], 
-                                    [1, QColor(30, 36, 45, 255)]
+                                    [0.0645161, QColor(255, 255, 255, 255)], 
+                                    [0.37788, QColor(200, 200, 200, 255)], 
+                                    [1, QColor(130, 130, 130, 255)]
                                     ]
 
-        if Theme == 2:
-            self.set_scale_polygon_colors([[.25, Qt.red],
-                                     [.5, Qt.yellow],
-                                     [.75, Qt.green]])
-
-            self.needle_center_bg = [
-                                    [0, QColor(35, 40, 3, 255)], 
-                                    [0.16, QColor(30, 36, 45, 255)], 
-                                    [0.225, QColor(36, 42, 54, 255)], 
-                                    [0.423963, QColor(19, 23, 29, 255)], 
-                                    [0.580645, QColor(45, 53, 68, 255)], 
-                                    [0.792627, QColor(59, 70, 88, 255)], 
-                                    [0.935, QColor(30, 35, 45, 255)], 
-                                    [1, QColor(35, 40, 3, 255)]
-                                    ]
-
-            self.outer_circle_bg =  [
-                                    [0.0645161, QColor(30, 35, 45, 255)], 
-                                    [0.37788, QColor(57, 67, 86, 255)], 
-                                    [1, QColor(30, 36, 45, 255)]
-                                    ]
-
-        elif Theme == 3:
-            self.set_scale_polygon_colors([[.00, Qt.white]])
-
-            self.needle_center_bg = [
-                                    [0, Qt.white], 
-                                    ]
-
-            self.outer_circle_bg =  [
-                                    [0, Qt.white], 
-                                    ]
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 4:
-            self.set_scale_polygon_colors([[1, Qt.black]])
-
-            self.needle_center_bg = [
-                                    [0, Qt.black], 
-                                    ]
-
-            self.outer_circle_bg =  [
-                                    [0, Qt.black], 
-                                    ]
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 5:
-            self.set_scale_polygon_colors([[1, QColor("#029CDE")]])  
-
-            self.needle_center_bg = [
-                                    [0, QColor("#029CDE")], 
-                                    ]
-
-            self.outer_circle_bg =  [
-                                    [0, QColor("#029CDE")], 
-                                    ]
-
-        elif Theme == 6:
-            self.set_scale_polygon_colors([[.75, QColor("#01ADEF")],
-                                     [.5, QColor("#0086BF")],
-                                     [.25, QColor("#005275")]])
-
-            self.needle_center_bg = [
-                                    [0, QColor(0, 46, 61, 255)], 
-                                    [0.322581, QColor(1, 173, 239, 255)], 
-                                    [0.571429, QColor(0, 73, 99, 255)],
-                                    [1, QColor(0, 46, 61, 255)]
-                                    ]
-
-            self.outer_circle_bg =  [
-                                    [0.0645161, QColor(0, 85, 116, 255)], 
-                                    [0.37788, QColor(1, 173, 239, 255)], 
-                                    [1, QColor(0, 69, 94, 255)]
-                                    ]
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 7:
-            self.set_scale_polygon_colors([[.25, QColor("#01ADEF")],
-                                     [.5, QColor("#0086BF")],
-                                     [.75, QColor("#005275")]])
-
-            self.needle_center_bg = [
-                                    [0, QColor(0, 46, 61, 255)], 
-                                    [0.322581, QColor(1, 173, 239, 255)], 
-                                    [0.571429, QColor(0, 73, 99, 255)],
-                                    [1, QColor(0, 46, 61, 255)]
-                                    ]
-
-            self.outer_circle_bg =  [
-                                    [0.0645161, QColor(0, 85, 116, 255)], 
-                                    [0.37788, QColor(1, 173, 239, 255)], 
-                                    [1, QColor(0, 69, 94, 255)]
-                                    ]
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 8:
-            self.setCustomGaugeTheme(
-                color1 = "#ffaa00",
-                color2= "#7d5300",
-                color3 = "#3e2900"
-            )
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 9:
-            self.setCustomGaugeTheme(
-                color1 = "#3e2900",
-                color2= "#7d5300",
-                color3 = "#ffaa00"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 10:
-            self.setCustomGaugeTheme(
-                color1 = "#ff007f",
-                color2= "#aa0055",
-                color3 = "#830042"
-            )
-
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 11:
-            self.setCustomGaugeTheme(
-                color1 = "#830042",
-                color2= "#aa0055",
-                color3 = "#ff007f"
-            )
-            
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 12:
-            self.setCustomGaugeTheme(
-                color1 = "#ffe75d",
-                color2= "#896c1a",
-                color3 = "#232803"
-            )
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 13:
-            self.setCustomGaugeTheme(
-                color1 = "#ffe75d",
-                color2= "#896c1a",
-                color3 = "#232803"
-            )
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 14:
-            self.setCustomGaugeTheme(
-                color1 = "#232803",
-                color2= "#821600",
-                color3 = "#ffe75d"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 15:
-            self.setCustomGaugeTheme(
-                color1 = "#00FF11",
-                color2= "#00990A",
-                color3 = "#002603"
-            )
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 16:
-            self.setCustomGaugeTheme(
-                color1 = "#002603",
-                color2= "#00990A",
-                color3 = "#00FF11"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 17:
-            self.setCustomGaugeTheme(
-                color1 = "#00FFCC",
-                color2= "#00876C",
-                color3 = "#00211B"
-            )
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 18:
-            self.setCustomGaugeTheme(
-                color1 = "#00211B",
-                color2= "#00876C",
-                color3 = "#00FFCC"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 19:
-            self.setCustomGaugeTheme(
-                color1 = "#001EFF",
-                color2= "#001299",
-                color3 = "#000426"
-            )
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 20:
-            self.setCustomGaugeTheme(
-                color1 = "#000426",
-                color2= "#001299",
-                color3 = "#001EFF"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 21:
-            self.setCustomGaugeTheme(
-                color1 = "#F200FF",
-                color2= "#85008C",
-                color3 = "#240026"
-            )
-
-            self.bigScaleMarker = Qt.black
-            self.fineScaleColor = Qt.black
-
-        elif Theme == 22:
-            self.setCustomGaugeTheme(
-                color1 = "#240026",
-                color2= "#85008C",
-                color3 = "#F200FF"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 23:
-            self.setCustomGaugeTheme(
-                color1 = "#FF0022",
-                color2= "#080001",
-                color3 = "#009991"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
-        elif Theme == 24:
-            self.setCustomGaugeTheme(
-                color1 = "#009991",
-                color2= "#080001",
-                color3 = "#FF0022"
-            )
-
-            self.bigScaleMarker = Qt.white
-            self.fineScaleColor = Qt.white
-
+        
     ################################################################################################
     # SET CUSTOM GAUGE THEME
     ################################################################################################
@@ -725,8 +436,8 @@ class Compass(QWidget):
         # SET NEEDLE SIZE
         ################################################################################################
         self.change_value_needle_style([QPolygon([
-            QPoint(4, 30),
-            QPoint(-4, 30),
+            QPoint(4, 0),
+            QPoint(-4, 0),
             QPoint(-2, - self.widget_diameter / 2 * self.needle_scale_factor),
             QPoint(0, - self.widget_diameter / 2 * self.needle_scale_factor - 6),
             QPoint(2, - self.widget_diameter / 2 * self.needle_scale_factor)
@@ -1290,7 +1001,7 @@ class Compass(QWidget):
 
         # create_polygon_pie(self, outer_radius, inner_raduis, start, lenght)
         colored_scale_polygon = self.create_polygon_pie(
-                ((self.widget_diameter / 8) - (self.pen.width() / 2)),
+                ((self.widget_diameter / 12) - (self.pen.width() / 2)),
                 0,
                 self.scale_angle_start_value, 360, False)
 
@@ -1322,9 +1033,10 @@ class Compass(QWidget):
         painter.translate(self.width() / 2, self.height() / 2)
         painter.setPen(Qt.NoPen)
         colored_scale_polygon = self.create_polygon_pie(
-                ((self.widget_diameter / 2) - (self.pen.width())),
-                (self.widget_diameter / 6),
-                self.scale_angle_start_value / 10, 360, False)
+                ((self.widget_diameter / 2) - (self.pen.width())), # Radio exterior del ciculo
+                (self.widget_diameter / 6), # Radio interior del círculo
+                self.scale_angle_start_value / 10,
+                360, False)
 
         radialGradient = QRadialGradient(QPointF(0, 0), self.width())
 
@@ -1403,29 +1115,6 @@ class Compass(QWidget):
         if self.enable_CenterPoint:
             self.draw_big_needle_center_point(diameter=(self.widget_diameter / 6))
 
-
-    ###############################################################################################
-    # MOUSE EVENTS
-    ###############################################################################################
-
-    def setMouseTracking(self, flag):
-        def recursive_set(parent):
-            for child in parent.findChildren(QObject):
-                try:
-                    child.setMouseTracking(flag)
-                except:
-                    pass
-                recursive_set(child)
-
-        QWidget.setMouseTracking(self, flag)
-        recursive_set(self)
-
-    def mouseReleaseEvent(self, QMouseEvent):
-        self.NeedleColor = self.NeedleColorReleased
-
-        if not self.use_timer_event:
-            self.update()
-        pass
 
 #################################################################################################
 # END ==>
