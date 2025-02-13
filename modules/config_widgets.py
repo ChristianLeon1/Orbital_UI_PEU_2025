@@ -130,8 +130,8 @@ class WidgetsIn(QMainWindow):
         self.acelerometro.maxValue = 12 
         self.acelerometro.enable_value_text = False
         self.brujula_widget = Compass(self.frame_medidores) 
-        self.brujula_widget.enable_value_text = False
-        
+        self.brujula_widget.enable_value_text = False 
+
         # Graficas 
         self.temp_frame = CustomFrame(parent=self, background="#151515") 
         self.carbono_frame = CustomFrame(parent=self, background="#151515") 

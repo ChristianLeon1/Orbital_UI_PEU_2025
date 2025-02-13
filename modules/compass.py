@@ -60,7 +60,7 @@ class Compass(QWidget):
         ################################################################################################
         # DEFAULT SCALE TEXT COLOR
         ################################################################################################
-        self.setScaleValueColor(250, 250, 250, 255)
+        self.setScaleValueColor(0, 0, 0, 255)
 
         ################################################################################################
         # DEFAULT VALUE COLOR
@@ -118,7 +118,7 @@ class Compass(QWidget):
 
         self.angle_offset = 0
 
-        self.setScalaCount(4)   # Divisiones grandes
+        self.setScalaCount(8)   # Divisiones grandes
         self.scala_subdiv_count = 9 #Divisiones pequeñas 
 
         self.pen = QPen(QColor(0, 0, 0)) #Color de las divisiones 
@@ -441,8 +441,16 @@ class Compass(QWidget):
             QPoint(-2, - self.widget_diameter / 2 * self.needle_scale_factor),
             QPoint(0, - self.widget_diameter / 2 * self.needle_scale_factor - 6),
             QPoint(2, - self.widget_diameter / 2 * self.needle_scale_factor)
-        ])])
-
+        ])
+                                        ,
+        QPolygon([
+            QPoint(4, 0),
+            QPoint(-4, 0),
+            QPoint(-2, - self.widget_diameter / 2 * self.needle_scale_factor),
+            QPoint(0, - self.widget_diameter / 2 * self.needle_scale_factor - 6),
+            QPoint(2, - self.widget_diameter / 2 * self.needle_scale_factor)
+        ])
+                                        ])
 
         ################################################################################################
         # SET FONT SIZE
@@ -899,18 +907,9 @@ class Compass(QWidget):
             try:
                 painter.setRenderHint(QPainter.Antialiasing)
             except AttributeError:
-                # Neither hint is available; you can handle this case as needed
                 pass
 
-        # painter.setRenderHint(QPainter.AA_HighDpiScaling)
-        # painter.setRenderHint(QPainter.SmoothPixmapTransform)
-
-
-
         painter.translate(self.width() / 2, self.height() / 2)
-        # painter.save()
-        # xShadow = 3.0
-        # yShadow = 3.0
         font = QFont(self.value_fontname, self.value_fontsize, QFont.Bold)
         fm = QFontMetrics(font)
 
@@ -921,16 +920,12 @@ class Compass(QWidget):
 
         text_radius = self.widget_diameter / 2 * self.text_radius_factor
 
-        # angle_distance = (float(self.scale_angle_size) / float(self.scalaCount))
-        # for i in range(self.scalaCount + 1):
         text = str(int(self.value))
+
         w = fm.width(text) + 1
         h = fm.height()
         painter.setFont(QFont(self.value_fontname, self.value_fontsize, QFont.Bold))
 
-        # Mitte zwischen Skalenstart und Skalenende:
-        # Skalenende = Skalenanfang - 360 + Skalenlaenge
-        # Skalenmitte = (Skalenende - Skalenanfang) / 2 + Skalenanfang
         angle_end = float(self.scale_angle_start_value + self.scale_angle_size - 360)
         angle = (angle_end - self.scale_angle_start_value) / 2 + self.scale_angle_start_value
 
@@ -1034,7 +1029,7 @@ class Compass(QWidget):
         painter.setPen(Qt.NoPen)
         colored_scale_polygon = self.create_polygon_pie(
                 ((self.widget_diameter / 2) - (self.pen.width())), # Radio exterior del ciculo
-                (self.widget_diameter / 6), # Radio interior del círculo
+                (0), # Radio interior del círculo
                 self.scale_angle_start_value / 10,
                 360, False)
 
@@ -1062,6 +1057,21 @@ class Compass(QWidget):
         painter.setBrush(self.NeedleColor)
         painter.rotate(((self.value - self.value_offset - self.minValue) * self.scale_angle_size /
                         (self.maxValue - self.minValue)) + 90 + self.scale_angle_start_value)
+
+        painter.drawConvexPolygon(self.value_needle[0])
+        # Koordinatenursprung in die Mitte der Flaeche legen
+
+    def draw_needle_2(self): 
+    #     
+        painter = QPainter(self)
+        # painter.setRenderHint(QtGui.QPainter.HighQualityAntialiasing)
+        painter.setRenderHint(QPainter.Antialiasing)
+        # Koordinatenursprung in die Mitte der Flaeche legen
+        painter.translate(self.width() / 2, self.height() / 2)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(0, 54, 255, 255))
+        painter.rotate(((self.value - self.value_offset - self.minValue) * self.scale_angle_size /
+                        (self.maxValue - self.minValue)) - 90 + self.scale_angle_start_value)
 
         painter.drawConvexPolygon(self.value_needle[0])
 
@@ -1110,6 +1120,7 @@ class Compass(QWidget):
         # draw needle 1
         if self.enable_Needle_Polygon:
             self.draw_needle()
+            self.draw_needle_2()
 
         # Draw Center Point
         if self.enable_CenterPoint:
