@@ -1,2 +1,4 @@
 .venv/ 
-pruebas/
+pruebas/ 
+modules/logs/
+modules/__pycache__/
