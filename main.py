@@ -15,6 +15,7 @@
 import sys
 import pandas as pd 
 import folium 
+from pathlib import Path
 from modules.config_widgets import *
 from modules.serial_mod import *
 from modules.distancia_coord import *
@@ -32,8 +33,8 @@ class MainWindow(WidgetsIn):
         self.cp_index = -1 
         self.tiempo_transcur_cp = [0]
         
-        self.cp = {'ID':[],'Tiempo de misión':[],'Contador de paquetes':[],'Altitud':[],'Presión':[],'Temperatura':[],'Voltaje':[],'Hora':[],'Latitud':[],'Longitud':[],'Pitch':[],'Roll':[],'Aceleración':[],'Estado Software':[]}
-        self.name = ['ID','Tiempo de misión', 'Contador de paquetes', 'Altitud', 'Presión', 'Temperatura', 'Voltaje','Hora','Latitud','Longitud','Pitch','Roll','Aceleración','Estado Software']
+        self.cp = pd.DataFrame({'Paquetes':[],'Tiempo de misión':[],'Servo':[],'Latitud':[],'Longitud':[],'Temperatura':[],'Presión':[],'Altitud':[],'Aceleración en X':[],'Aceleración en Y':[],'Aceleración Z':[],'X':[], 'Y':[], 'Z':[],'Rotación X':[],'Rotación Y':[], 'Rotación Z':[], 'Brujula':[], 'Bateria':[], 'CO2':[], 'Humedad':[]}) 
+        self.names = self.cp.columns
 
         #Inicialización de variables 
         self.baud_rate = None
@@ -44,7 +45,6 @@ class MainWindow(WidgetsIn):
         self.flag = False
         self.flag_act = True
         self.posicion = [0,0]
-        self.posicion_2 = [0,0]
         self.graf_x = 15
         self.pos_objetivo = [0,0]
         self.lag_objetivo = False
@@ -128,7 +128,7 @@ class MainWindow(WidgetsIn):
         if self.baud_rate != None and self.port != None: 
             self.boton_calib_altura.setEnabled(False)
             self.boton_posicion.setEnabled(False)
-            self.datos_a_serial.setEnabled(True)
+            # self.datos_a_serial.setEnabled(True)
             self.boton_des_servo.setEnabled(True)
             self.boton_act_servo.setEnabled(True)
             self.ser.setPortName(self.port)
@@ -143,9 +143,10 @@ class MainWindow(WidgetsIn):
             self.statusBar().showMessage(f'No se pudo conectar al puerto {self.port}', 10000)
 
     def EnviarSerial(self):
-        texto = self.datos_a_serial.text().encode("utf-8")
-        self.datos_a_serial.setText("")
-        self.ser.write(texto) 
+        # texto = self.datos_a_serial.text().encode("utf-8")
+        # self.datos_a_serial.setText("")
+        # self.ser.write(texto) 
+        pass # Falta habilitar el monitor serial 
 
     def LimpiarSerial(self): 
         # self.serial_monitor.setText("") 
@@ -164,27 +165,24 @@ class MainWindow(WidgetsIn):
             if self.flag_objetivo: 
                 self.maps = folium.Map(location=self.pos_objetivo, zoom_start=18)
                 folium.CircleMarker(location=self.pos_objetivo, radius=6, color="#FFE000", fill=True, border=True, opacity=0.7).add_to(self.maps)
-                self.dis_cp_obj.setText("SIN OBJ")
             else:
                 self.maps = folium.Map(location=self.posicion, zoom_start=18)
-                self.dis_cp_obj.setText("SIN OBJ")
             folium.CircleMarker(location=self.posicion, radius=6, color="red", fill=True, border=True, opacity=0.7).add_to(self.maps)
-            folium.CircleMarker(location=self.posicion_2, radius=6, color="#466DFF", fill=True, border=True, opacity=0.7).add_to(self.maps)
             self.gps_w.setHtml(self.maps.get_root().render())
             self.gps_timer.start(3007)
 
     def ActualizarSensores(self): 
         #Identificadores
         self.hora.setText(f"{self.cp['Hora'][self.cp_index]}")
-        self.id.setText(f"{self.cp['ID'][self.cp_index]}")
-        self.pack.setText(f"{self.cp['Contador de paquetes'][self.cp_index]}")
-        self.launcht.setText(f"{self.cp['Tiempo de misión'][self.cp_index]}")
+        self.contador_paquetes.setText(f"{self.cp['Contador de paquetes'][self.cp_index]}")
+        self.tiempo_vuelo.setText(f"{self.cp['Tiempo de misión'][self.cp_index]}")
 
         #Mensajes de sensores 
-        self.pitch.setText(f"{self.cp['Pitch'][self.cp_index]}")
-        self.roll.setText(f"{self.cp['Roll'][self.cp_index]}")
-        self.rpm.setText(f"{self.cp['Aceleración'][self.cp_index]}")
-        self.estado.setText(f"{self.cp['Estado Software'][self.cp_index]}")
+        self.estado.setText(f"{self.cp['Estado Software'][self.cp_index]}") 
+        self.bateria.setText(f"{self.cp['Bateria']}") 
+        self.brujula.setText(f"{self.cp['Brujula']}")
+        self.aceleracion.setText(f"{self.cp['Aceleración en Z']}")
+
         #Falta poner la velocidad. 
         if self.cp_index > 20: 
             velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) / (self.tiempo_transcur_cp[len(self.tiempo_transcur_cp) - 20] - self.tiempo_transcur_cp[len(self.tiempo_transcur_cp) - 1]), 2)
@@ -200,10 +198,10 @@ class MainWindow(WidgetsIn):
         if not self.cp['Tiempo de misión'][self.cp_index] < self.graf_x: 
             self.graf_x += 15
             print("Prueba 3")
-            self.volt.setXRange(self.graf_x - 15, self.graf_x)
             self.temp.setXRange(self.graf_x - 15, self.graf_x)
+            self.carbono.setXRange(self.graf_x - 15, self.graf_x)
             self.presion.setXRange(self.graf_x - 15, self.graf_x) 
-        self.volt.data.setData(self.cp['Tiempo de misión'], self.cp['Voltaje'])
+        self.carbono.data.setData(self.cp['Tiempo de misión'], self.cp['Voltaje'])
         self.temp.data.setData(self.cp['Tiempo de misión'], self.cp['Temperatura'])
         self.presion.data.setData(self.cp['Tiempo de misión'], self.cp['Presión'])
 
@@ -219,12 +217,13 @@ class MainWindow(WidgetsIn):
             return 
         try: 
             new_row = str(self.ser.readLine(),'utf-8')            
-            self.serial_monitor.append(new_row)
+            # self.serial_monitor.append(new_row)
             new_row = new_row.strip("\n").split(',')
-            if len(new_row) != 14: 
+            # print("prueba_ 1")
+            if len(new_row) != 21: 
                 return 
             if "\\r" in new_row: 
-                new_row[13] = new_row[13].rsplit("\\r")
+                new_row[20] = new_row[20].rsplit("\\r")
             for i in range(0,len(new_row)): 
                 if new_row[i].isdigit(): 
                     new_row[i] = int(new_row[i]) 
@@ -234,23 +233,13 @@ class MainWindow(WidgetsIn):
                     except: 
                         pass 
             
-            new_row[0] = Cambio_ID(new_row[0])
-            new_row[3] = round(new_row[3] - self.ajuste_altura, 2) 
-            new_row[8] = LatitudGPS(new_row[8])
-            new_row[9] = LongitudGPS(new_row[9])
-            new_row[13] = EstadoSoftware(new_row[13])
-
-            for i in range(len(new_row)): 
-                self.cp[self.name[i]].append(new_row[i])
-            self.cp_index += 1
+            print(new_row)
+            self.cp[len(self.cp.index)] = new_row 
             
+            print(self.cp[len(self.cp.index)])
             if not self.flag: 
                 self.flag = True 
                 self.tiempo_inic = time.time()
-            else: 
-                if new_row[0] == "ORB_CP":
-                    self.tiempo_transcur_cp.append(time.time() - self.tiempo_inic)
-
 
             if (self.cp_index !=-1) and self.flag_act: 
                 self.ActualizarGPS()
@@ -265,7 +254,7 @@ class MainWindow(WidgetsIn):
         self.boton_descon.setEnabled(False)
         self.boton_posicion.setEnabled(True)
         self.boton_calib_altura.setEnabled(True)
-        self.datos_a_serial.setEnabled(False)
+        # self.datos_a_serial.setEnabled(False)
         self.boton_des_servo.setEnabled(False)
         self.boton_des_servo.setEnabled(False)
         if self.ser.isOpen: 
@@ -273,9 +262,8 @@ class MainWindow(WidgetsIn):
             self.statusBar().showMessage(f'Se desconecto correctamente el puerto {self.port}', 10000)
 
     def GuardarCSV(self):  # Nota, revisar si ya es un DataFrame
-        if self.cp_index > 1: 
-            df = pd.DataFrame(self.cp)
-            df.to_csv(f"Vuelo_{self.cp['ID'][self.cp_index]}.csv", header =True)
+        if len(self.cp.index) > 1: 
+            self.cp.to_csv(f"Vuelo_.csv", header =True)
         else: 
             self.statusBar().showMessage(f"No hay ningun archivo por guardar.", 10000)
            

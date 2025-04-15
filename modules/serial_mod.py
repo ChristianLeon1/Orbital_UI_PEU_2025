@@ -3,15 +3,14 @@
 
 # AÑO: 2023 CREADOR: Christian Yael Ramírez León
 
-import subprocess 
+import sys 
+from PySide6.QtSerialPort import QSerialPortInfo  # Módulo nativo de Qt para puertos seriales
 
 def PuertoDisponible(): 
-    port = subprocess.run(['python3', '-m', 'serial.tools.list_ports'], capture_output=True) 
-    port = str(port.stdout, 'utf-8')
-    if len(port) == 0: 
+    names = []
+    ports = QSerialPortInfo.availablePorts()
+    if not ports: 
         return 0 
-    port = port.split('\n')
-    port.remove('')
-    for i in range(0,len(port)): 
-        port[i] = port[i].strip()
-    return port 
+    for port in ports: 
+        names.append(port.portName())
+    return names

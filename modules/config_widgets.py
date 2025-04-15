@@ -3,16 +3,23 @@
 
 # AÑO: 2025 CREADOR: Christian Yael Ramírez León
 
-from PySide6.QtCore import QSize, Qt 
-from PySide6.QtGui import QAction, QKeySequence, QPixmap, QResizeEvent, Qt
-from PySide6.QtWidgets import QMainWindow, QToolBar, QComboBox, QLabel, QStatusBar, QFrame, QTabWidget, QVBoxLayout, QLineEdit, QTextEdit, QPushButton
-from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtCore import QSize, Qt, QUrl
+from PySide6.QtGui import QAction, QKeySequence, QPixmap, QResizeEvent, Qt, QVector3D, QColor
+from PySide6.QtWidgets import QMainWindow, QToolBar, QComboBox, QLabel, QStatusBar, QFrame, QTabWidget, QVBoxLayout, QLineEdit, QTextEdit, QPushButton, QWidget
+from PySide6.QtWebEngineWidgets import QWebEngineView 
+from PySide6.Qt3DCore import Qt3DCore 
+from PySide6.Qt3DRender import Qt3DRender 
+from PySide6.Qt3DExtras import Qt3DExtras 
 from modules.tab_style import ColorTab 
 from modules.custom_widgets import *
 from modules.gaugemeter import AnalogGaugeWidget
 from modules.compass import Compass
+from modules.ventana_simulacion import *
 import folium 
-class WidgetsIn(QMainWindow): 
+class WidgetsIn(QMainWindow):  
+    def __init__(self): 
+        super().__init__() 
+
     def IncluirWidgetsConfig(self): 
 
         #Ajustes app 
@@ -158,6 +165,13 @@ class WidgetsIn(QMainWindow):
 
         # Simulación 3D 
         self.simulacion_frame = CustomFrame(self, "#151515")
+        self.simulacion_container = QVBoxLayout(self.simulacion_frame) 
+        self.ventana_3d = Ventana_3d() 
+        self.ventana_3d.setup_lights() 
+        self.ventana_3d.load_3d_model() 
+
+        self.ventana_container = QWidget.createWindowContainer(self.ventana_3d)
+        self.simulacion_container.addWidget(self.ventana_container)
 
         # #Tab monitor serial
         # self.tab_serial_monitor.setStyleSheet("border-radius: 5px;")
@@ -240,3 +254,5 @@ class WidgetsIn(QMainWindow):
         # Simulación 3d 
 
         self.simulacion_frame.setGeometry(int(0.005*width), int(0.08*height), int(0.41*width), int(0.5*height))
+        # width_f, height_f = self.simulacion_frame.geometry().width(), self.simulacion_frame.geometry().height() 
+        # self.ventana_3d.setGeometry(int(0.05*width_f), int(0.05*height_f), int(0.9*width_f), int(0.9*height_f))
