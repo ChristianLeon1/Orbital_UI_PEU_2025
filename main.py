@@ -30,11 +30,11 @@ class MainWindow(WidgetsIn):
 
         super(MainWindow, self).__init__()          
         self.app = app 
-        self.cp_index = -1 
         self.tiempo_transcur_cp = [0]
         
         self.cp = pd.DataFrame({'Paquetes':[],'Tiempo de misión':[],'Servo':[],'Latitud':[],'Longitud':[],'Temperatura':[],'Presión':[],'Altitud':[],'Aceleración en X':[],'Aceleración en Y':[],'Aceleración Z':[],'X':[], 'Y':[], 'Z':[],'Rotación X':[],'Rotación Y':[], 'Rotación Z':[], 'Brujula':[], 'Bateria':[], 'CO2':[], 'Humedad':[]}) 
-        self.names = self.cp.columns
+        self.names = self.cp.columns 
+        self.cp_index = len(self.cp.index) - 1
 
         #Inicialización de variables 
         self.baud_rate = None
@@ -173,6 +173,7 @@ class MainWindow(WidgetsIn):
 
     def ActualizarSensores(self): 
         #Identificadores
+        print("prueba_1")
         self.hora.setText(f"{self.cp['Hora'][self.cp_index]}")
         self.contador_paquetes.setText(f"{self.cp['Contador de paquetes'][self.cp_index]}")
         self.tiempo_vuelo.setText(f"{self.cp['Tiempo de misión'][self.cp_index]}")
@@ -217,14 +218,39 @@ class MainWindow(WidgetsIn):
             return 
         try: 
             new_row = str(self.ser.readLine(),'utf-8')            
-            # self.serial_monitor.append(new_row)
             new_row = new_row.strip("\n").split(',')
-            # print("prueba_ 1")
             if len(new_row) != 21: 
                 return 
+
             if "\\r" in new_row: 
                 new_row[20] = new_row[20].rsplit("\\r")
-            for i in range(0,len(new_row)): 
+
+
+            new_row = {
+                'Paquetes': new_row[0],
+                'Tiempo de misión': new_row[1],
+                'Servo': new_row[2],
+                'Latitud': new_row[3],
+                'Longitud': new_row[4],
+                'Temperatura': new_row[5],
+                'Presión': new_row[6],
+                'Altitud': new_row[7],
+                'Aceleración en X': new_row[8],
+                'Aceleración en Y': new_row[9],
+                'Aceleración Z': new_row[10],
+                'X': new_row[11],
+                'Y': new_row[12],
+                'Z': new_row[13],
+                'Rotación X': new_row[14],
+                'Rotación Y': new_row[15],
+                'Rotación Z': new_row[16],
+                'Brujula': new_row[17],
+                'Bateria': new_row[18],
+                'CO2': new_row[19],
+                'Humedad': new_row[20]
+
+            }
+            for i in self.cp.columns: 
                 if new_row[i].isdigit(): 
                     new_row[i] = int(new_row[i]) 
                 else: 
@@ -233,13 +259,13 @@ class MainWindow(WidgetsIn):
                     except: 
                         pass 
             
-            print(new_row)
-            self.cp[len(self.cp.index)] = new_row 
+            self.cp = pd.concat([self.cp, pd.DataFrame([new_row])], ignore_index=True)
             
-            print(self.cp[len(self.cp.index)])
             if not self.flag: 
                 self.flag = True 
-                self.tiempo_inic = time.time()
+                self.tiempo_inic = time.time() 
+
+            self.cp_index = len(self.cp.index) - 1
 
             if (self.cp_index !=-1) and self.flag_act: 
                 self.ActualizarGPS()
@@ -254,14 +280,13 @@ class MainWindow(WidgetsIn):
         self.boton_descon.setEnabled(False)
         self.boton_posicion.setEnabled(True)
         self.boton_calib_altura.setEnabled(True)
-        # self.datos_a_serial.setEnabled(False)
         self.boton_des_servo.setEnabled(False)
         self.boton_des_servo.setEnabled(False)
         if self.ser.isOpen: 
             self.ser.close()
             self.statusBar().showMessage(f'Se desconecto correctamente el puerto {self.port}', 10000)
 
-    def GuardarCSV(self):  # Nota, revisar si ya es un DataFrame
+    def GuardarCSV(self):  
         if len(self.cp.index) > 1: 
             self.cp.to_csv(f"Vuelo_.csv", header =True)
         else: 
