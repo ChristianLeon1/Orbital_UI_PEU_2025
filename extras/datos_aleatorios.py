@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# AÑO: 2025 CREADOR: Christian Yael Ramírez León
-
 import pandas as pd
 import numpy as np
 import random
@@ -10,10 +5,11 @@ from datetime import datetime, timedelta
 
 class SatelliteDataGenerator:
     def __init__(self):
-        # Inicializar el DataFrame con la estructura especificada
         self.df = pd.DataFrame({
             'Paquetes': [],
-            'Tiempo de misión': [],
+            'Tiempo de misión (s)': [],
+            'Hora': [],
+            'Estado de la misión': [],
             'Servo': [],
             'Latitud': [],
             'Longitud': [],
@@ -22,67 +18,95 @@ class SatelliteDataGenerator:
             'Altitud': [],
             'Aceleración en X': [],
             'Aceleración en Y': [],
-            'Aceleración Z': [],
-            'X': [],
-            'Y': [],
-            'Z': [],
-            'Rotación X': [],
-            'Rotación Y': [],
-            'Rotación Z': [],
-            'Brujula': [],
+            'Aceleración en Z': [],
+            'Giro X': [],
+            'Giro Y': [],
+            'Giro Z': [],
+            'Ángulo X': [],
+            'Ángulo Y': [],
+            'Ángulo Z': [],
+            'Brujula': [], 
             'Bateria': [],
             'CO2': [],
             'Humedad': []
         })
         
-        # Configuración inicial para generación de datos
-        self.package_count = np.int64(0)
-        self.mission_time = timedelta(seconds=0)
+        self.package_count = 0
+        self.mission_time_seconds = 0
+        self.start_time = datetime.now()
         self.base_lat = random.uniform(-90, 90)
         self.base_lon = random.uniform(-180, 180)
+        self.altitude = 0 
+        self.current_compass = 0.0  # Valor inicial de la brújula
+        self.compass_direction = 1  # 1 para aumentar, -1 para disminuir
         
     def generate_data(self, num_samples=100):
         for _ in range(num_samples):
             self.package_count += 1
-            self.mission_time += timedelta(seconds=random.uniform(0.1, 1.0))
+            time_increment = 0.014
+            self.mission_time_seconds = round(self.mission_time_seconds + time_increment, 3)
             
-            # Generar datos aleatorios para cada columna
+            # Cálculo de altitud
+            gravity = 9.8 
+            velocity_elevation = 5 
+            velocity_fall = 10
+
+            if self.mission_time_seconds  <= 90: 
+                self.altitude += time_increment*velocity_elevation 
+            elif 90 < self.mission_time_seconds and self.mission_time_seconds <= 98.456: 
+                tiempo = self.mission_time_seconds - 90 
+                self.altitude = 450 - (gravity / 2) * tiempo ** 2 
+            elif 98.456 < self.mission_time_seconds and self.mission_time_seconds <= 108.4:  
+                self.altitude -= velocity_fall*time_increment
+            else: 
+                self.altitude = 0 
+            # Actualización de la brújula con cambio lineal
+            compass_increment = 0.20
+            self.current_compass += compass_increment
+            
+            # Cambiar dirección si alcanza los límites
+            if self.current_compass >= 360: 
+                self.current_compass -= 360
+                
+            mission_status = 1
+            
             new_row = {
-                'Paquetes': self.package_count,
-                'Tiempo de misión': str(self.mission_time),
+                'Paquetes': np.int64(self.package_count),
+                'Tiempo de misión (s)': self.mission_time_seconds,
+                'Hora': (self.start_time + timedelta(seconds=self.mission_time_seconds)).strftime("%H:%M:%S"),
+                'Estado de la misión': mission_status,
                 'Servo': random.choice([0, 1]),
-                'Latitud': self.base_lat + random.uniform(-0.01, 0.01),
-                'Longitud': self.base_lon + random.uniform(-0.01, 0.01),
-                'Temperatura': random.uniform(-50, 50),
-                'Presión': random.uniform(800, 1200),
-                'Altitud': random.uniform(100, 1000),
-                'Aceleración en X': random.uniform(-2, 2),
-                'Aceleración en Y': random.uniform(-2, 2),
-                'Aceleración Z': random.uniform(-2, 2),
-                'X': random.uniform(-1, 1),
-                'Y': random.uniform(-1, 1),
-                'Z': random.uniform(-1, 1),
-                'Rotación X': random.uniform(0, 360),
-                'Rotación Y': random.uniform(0, 360),
-                'Rotación Z': random.uniform(0, 360),
-                'Brujula': random.uniform(0, 360),
-                'Bateria': random.uniform(0, 100),
-                'CO2': random.uniform(300, 2000),
-                'Humedad': random.uniform(0, 100)
+                'Latitud': round(random.uniform(19.502454291471974,19.50264291471974),5),
+                'Longitud': -round(random.uniform(99.13312701719184, 99.13332701719184),5),
+                'Temperatura': round(random.uniform(-50, 50), 3),
+                'Presión': round(random.uniform(800, 1200), 3),
+                'Altitud': round(self.altitude, 3),
+                'Aceleración en X': round(random.uniform(-2, 2), 3),
+                'Aceleración en Y': round(random.uniform(-2, 2), 3),
+                'Aceleración en Z': round(random.uniform(9.5, 10.0), 3),
+                'Giro X': round(random.uniform(0, 360), 3),
+                'Giro Y': round(random.uniform(0, 360), 3),
+                'Giro Z': round(random.uniform(0, 360), 3),
+                'Ángulo X': round(random.uniform(0, 360), 3),
+                'Ángulo Y': round(random.uniform(0, 360), 3),
+                'Ángulo Z': round(random.uniform(0, 360), 3),
+                'Brujula': round(self.current_compass, 3),  # Valor lineal 0-180°
+                'Bateria': round(random.uniform(0, 100), 3),
+                'CO2': round(random.uniform(300, 2000), 3),
+                'Humedad': round(random.uniform(0, 100), 3)
             }
             
-            # Añadir la nueva fila al DataFrame
             self.df = pd.concat([self.df, pd.DataFrame([new_row])], ignore_index=True)
     
     def save_to_csv(self, filename='satellite_data.csv'):
+        self.df['Estado de la misión'] = np.int64(self.df['Estado de la misión'])
+        self.df['Paquetes'] = np.int64(self.df['Paquetes'])
+        self.df['Servo'] = np.int64(self.df['Servo'])
         self.df.to_csv(filename, index=False, header=False)
         print(f"Datos guardados exitosamente en {filename}")
 
 # Ejemplo de uso
 if __name__ == "__main__":
-    print("Generando datos de misión satelital...")
     generator = SatelliteDataGenerator()
-    generator.generate_data(1000)  # Generar 1000 muestras
-    generator.save_to_csv()
-    print("¡Datos generados exitosamente!")
-
+    generator.generate_data(10750)
+    generator.save_to_csv('Datos_mis_simul.csv')
