@@ -2,4 +2,5 @@
 pruebas/ 
 modules/logs/
 modules/__pycache__/ 
-logs/
+logs/ 
+extras/Datos_mis_simul.csv
