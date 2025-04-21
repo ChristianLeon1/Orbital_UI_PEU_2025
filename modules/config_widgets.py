@@ -134,8 +134,9 @@ class WidgetsIn(QMainWindow):
         self.velocimetro.enable_value_text = False 
         self.velocimetro.setGaugeTheme(2)
         self.acelerometro = AnalogGaugeWidget(self.frame_medidores) 
-        self.acelerometro.maxValue = 12 
-        self.acelerometro.enable_value_text = False
+        self.acelerometro.maxValue = 20
+        self.acelerometro.enable_value_text = False 
+        self.acelerometro.setGaugeTheme(2)
         self.brujula_widget = Compass(self.frame_medidores) 
         self.brujula_widget.enable_value_text = False 
 
@@ -160,7 +161,13 @@ class WidgetsIn(QMainWindow):
         # GPS
         self.gps_frame = CustomFrame(self,"#151515")
         self.gps_w = QWebEngineView(self.gps_frame)
-        self.maps = folium.Map(location = [19.4284, -99.1276], zoom_start=4)
+        # self.maps = folium.Map(location = [19.4284, -99.1276], zoom_start=4)
+
+        self.maps = folium.Map(
+            location=[19.4284, -99.1276],
+            zoom_start=4,
+            id="mapid"  # ID fijo para el contenedor del mapa
+        )
         self.gps_w.setHtml(self.maps.get_root().render())
 
         # Simulación 3D 

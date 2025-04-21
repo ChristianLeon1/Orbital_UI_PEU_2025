@@ -4,12 +4,6 @@
 # AÑO: 2025 CREADOR: Christian Yael Ramírez León 
 
 # Estación terrena para competencia CANSAT PEU 2025 
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# AÑO: 2025 AUTOR: Christian Yael Ramírez León
-
 # Interfaz de usuario para la estación terrena de cansat
 
 import sys
@@ -32,7 +26,36 @@ class MainWindow(WidgetsIn):
         self.app = app 
         self.tiempo_transcur_cp = [0]
         
-        self.cp = pd.DataFrame({'Paquetes':[],'Tiempo de misión':[],'Servo':[],'Latitud':[],'Longitud':[],'Temperatura':[],'Presión':[],'Altitud':[],'Aceleración en X':[],'Aceleración en Y':[],'Aceleración Z':[],'X':[], 'Y':[], 'Z':[],'Rotación X':[],'Rotación Y':[], 'Rotación Z':[], 'Brujula':[], 'Bateria':[], 'CO2':[], 'Humedad':[]}) 
+        self.cp = pd.DataFrame({'Paquetes':[],
+                                'Tiempo de misión':[],
+                                'Hora':[], 
+                                'Estado de la misión':[],
+                                'Servo':[],
+                                'Latitud':[],
+                                'Longitud':[],
+                                'Temperatura':[],
+                                'Presión':[],
+                                'Altitud':[],
+                                'Aceleración en X':[],
+                                'Aceleración en Y':[],
+                                'Aceleración en Z':[],
+                                'Giro X':[],
+                                'Giro Y':[],
+                                'Giro Z':[],
+                                'Ángulo X':[],
+                                'Ángulo Y':[],
+                                'Ángulo Z':[],
+                                'Brujula':[],
+                                'Bateria':[],
+                                'CO2':[],
+                                'Humedad':[]
+                                })
+
+        self.graficas = pd.DataFrame({'Tiempo': [],
+                                      'CO2': [],
+                                      'Presión':[], 
+                                      'Temperatura':[]})
+
         self.names = self.cp.columns 
         self.cp_index = len(self.cp.index) - 1
 
@@ -95,7 +118,6 @@ class MainWindow(WidgetsIn):
             latitud = float(self.latitud.text())
             longitud = float(self.longitud.text()) 
             self.pos_objetivo = [latitud, longitud]
-            self.flag_objetivo = True 
             self.statusBar().showMessage(f'Se guardo la ubicación del objetivo correctamente: {self.pos_objetivo}', 8000)
             self.maps = folium.Map(location = self.pos_objetivo, zoom_start=16)
             folium.CircleMarker(location=self.pos_objetivo, radius=10, color="#FFE000", fill=True, border=True, opacity=0.7).add_to(self.maps)
@@ -160,57 +182,76 @@ class MainWindow(WidgetsIn):
         self.ser.write("0".encode("utf-8")) 
 
     def ActualizarGPS(self):
+
         if not (self.posicion[0] == self.cp['Latitud'][self.cp_index] and self.posicion[1] == self.cp['Longitud'][self.cp_index]):
             self.posicion = [self.cp['Latitud'][self.cp_index], self.cp['Longitud'][self.cp_index]]
-            if self.flag_objetivo: 
-                self.maps = folium.Map(location=self.pos_objetivo, zoom_start=18)
-                folium.CircleMarker(location=self.pos_objetivo, radius=6, color="#FFE000", fill=True, border=True, opacity=0.7).add_to(self.maps)
-            else:
-                self.maps = folium.Map(location=self.posicion, zoom_start=18)
+            self.maps = folium.Map(location=self.posicion, zoom_start=18)
             folium.CircleMarker(location=self.posicion, radius=6, color="red", fill=True, border=True, opacity=0.7).add_to(self.maps)
             self.gps_w.setHtml(self.maps.get_root().render())
-            self.gps_timer.start(3007)
+        self.gps_timer.start(4007)
 
     def ActualizarSensores(self): 
         #Identificadores
-        print("prueba_1")
         self.hora.setText(f"{self.cp['Hora'][self.cp_index]}")
-        self.contador_paquetes.setText(f"{self.cp['Contador de paquetes'][self.cp_index]}")
+        self.contador_paquetes.setText(f"{self.cp['Paquetes'][self.cp_index]}")
         self.tiempo_vuelo.setText(f"{self.cp['Tiempo de misión'][self.cp_index]}")
 
         #Mensajes de sensores 
-        self.estado.setText(f"{self.cp['Estado Software'][self.cp_index]}") 
-        self.bateria.setText(f"{self.cp['Bateria']}") 
-        self.brujula.setText(f"{self.cp['Brujula']}")
-        self.aceleracion.setText(f"{self.cp['Aceleración en Z']}")
-
-        #Falta poner la velocidad. 
-        if self.cp_index > 20: 
-            velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) / (self.tiempo_transcur_cp[len(self.tiempo_transcur_cp) - 20] - self.tiempo_transcur_cp[len(self.tiempo_transcur_cp) - 1]), 2)
-            if velocidad == 0: 
-                self.velocidad.setText(f"0.0")
-            else: 
-                self.velocidad.setText(f"{velocidad}")
-        else: 
-            self.velocidad.setText(f"0.0")
+        self.estado.setText(f"{self.cp['Estado de la misión'][self.cp_index]}") 
+        self.bateria.setText(f"{self.cp['Bateria'][self.cp_index]}") 
+        self.brujula.setText(f"{self.cp['Brujula'][self.cp_index]}")
+        self.aceleracion.setText(f"{self.cp['Aceleración en Z'][self.cp_index]}")
         self.sensores_timer.start(500)
+        
+
 
     def ActualizarGraficas(self):
         if not self.cp['Tiempo de misión'][self.cp_index] < self.graf_x: 
             self.graf_x += 15
-            print("Prueba 3")
             self.temp.setXRange(self.graf_x - 15, self.graf_x)
             self.carbono.setXRange(self.graf_x - 15, self.graf_x)
-            self.presion.setXRange(self.graf_x - 15, self.graf_x) 
-        self.carbono.data.setData(self.cp['Tiempo de misión'], self.cp['Voltaje'])
-        self.temp.data.setData(self.cp['Tiempo de misión'], self.cp['Temperatura'])
-        self.presion.data.setData(self.cp['Tiempo de misión'], self.cp['Presión'])
+            self.presion.setXRange(self.graf_x - 15, self.graf_x)  
+            self.graficas = pd.DataFrame({'Tiempo': [],
+                                          'CO2': [],
+                                          'Presión':[], 
+                                          'Temperatura':[]})
+        new_row = {'Tiempo': self.cp['Tiempo de misión'][self.cp_index],
+                  'CO2': self.cp['CO2'][self.cp_index],
+                  'Presión': self.cp['Presión'][self.cp_index], 
+                  'Temperatura': self.cp['Temperatura'][self.cp_index]
+                   }
 
+        self.graficas = pd.concat([self.graficas, pd.DataFrame([new_row])], ignore_index=True)
+
+        self.carbono.data.setData(self.graficas['Tiempo'], self.graficas['CO2'])
+        self.temp.data.setData(self.graficas['Tiempo'], self.graficas['Temperatura'])
+        self.presion.data.setData(self.graficas['Tiempo'], self.graficas['Presión'])
         self.altura_cp.altura.setText(f"{self.cp['Altitud'][self.cp_index]} m")
+        self.acelerometro.updateValue(self.cp['Aceleración en Z'][self.cp_index])
+        self.brujula_widget.updateValue(self.cp['Brujula'][self.cp_index])
         if 0 <=  self.cp['Altitud'][self.cp_index] or  self.cp['Altitud'][self.cp_index] <= 500:
             self.altura_cp.bar.setValue(int(self.cp['Altitud'][self.cp_index]))
         else: 
-            self.altura_cp.bar.setValue(500)
+            self.altura_cp.bar.setValue(500) 
+
+        try: 
+            if self.cp_index > 20: 
+            
+                velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) /
+                                  (self.cp['Tiempo de misión'][self.cp_index - 20] - self.cp['Tiempo de misión'][self.cp_index]), 2)
+
+                if velocidad == 0: 
+                    self.velocidad.setText(f"0.0") 
+                    self.velocimetro.value = 0
+                else: 
+                    self.velocidad.setText(f"{velocidad}") 
+                self.velocimetro.updateValue((abs(velocidad)))
+            else: 
+                self.velocidad.setText(f"0.0") 
+        except: 
+            pass 
+
+        
         self.graficas_timer.start(79)
         
     def LeerDatos(self): 
@@ -219,37 +260,38 @@ class MainWindow(WidgetsIn):
         try: 
             new_row = str(self.ser.readLine(),'utf-8')            
             new_row = new_row.strip("\n").split(',')
-            if len(new_row) != 21: 
+            if len(new_row) != 23: 
                 return 
 
             if "\\r" in new_row: 
-                new_row[20] = new_row[20].rsplit("\\r")
-
+                new_row[22] = new_row[22].rsplit("\\r")
 
             new_row = {
                 'Paquetes': new_row[0],
                 'Tiempo de misión': new_row[1],
-                'Servo': new_row[2],
-                'Latitud': new_row[3],
-                'Longitud': new_row[4],
-                'Temperatura': new_row[5],
-                'Presión': new_row[6],
-                'Altitud': new_row[7],
-                'Aceleración en X': new_row[8],
-                'Aceleración en Y': new_row[9],
-                'Aceleración Z': new_row[10],
-                'X': new_row[11],
-                'Y': new_row[12],
-                'Z': new_row[13],
-                'Rotación X': new_row[14],
-                'Rotación Y': new_row[15],
-                'Rotación Z': new_row[16],
-                'Brujula': new_row[17],
-                'Bateria': new_row[18],
-                'CO2': new_row[19],
-                'Humedad': new_row[20]
-
+                'Hora':new_row[2],
+                'Estado de la misión': new_row[3],
+                'Servo': new_row[4], 
+                'Latitud': new_row[5],
+                'Longitud': new_row[6],
+                'Temperatura': new_row[7],
+                'Presión': new_row[8],
+                'Altitud': new_row[9],
+                'Aceleración en X': new_row[10],
+                'Aceleración en Y': new_row[11],
+                'Aceleración en Z': new_row[12],
+                'Giro X': new_row[13],
+                'Giro Y': new_row[14],
+                'Giro Z': new_row[15],
+                'Ángulo X': new_row[16],
+                'Ángulo Y': new_row[17],
+                'Ángulo Z': new_row[18],
+                'Brujula': new_row[19],
+                'Bateria': new_row[20],
+                'CO2': new_row[21],
+                'Humedad': new_row[22]
             }
+
             for i in self.cp.columns: 
                 if new_row[i].isdigit(): 
                     new_row[i] = int(new_row[i]) 
@@ -266,7 +308,7 @@ class MainWindow(WidgetsIn):
                 self.tiempo_inic = time.time() 
 
             self.cp_index = len(self.cp.index) - 1
-
+            
             if (self.cp_index !=-1) and self.flag_act: 
                 self.ActualizarGPS()
                 self.ActualizarSensores() 

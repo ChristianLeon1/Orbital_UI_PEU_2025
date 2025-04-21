@@ -43,7 +43,7 @@ class SatelliteDataGenerator:
     def generate_data(self, num_samples=100):
         for _ in range(num_samples):
             self.package_count += 1
-            time_increment = 0.014
+            time_increment = 0.033
             self.mission_time_seconds = round(self.mission_time_seconds + time_increment, 3)
             
             # Cálculo de altitud
