@@ -17,7 +17,7 @@ from PySide6.QtCore import QIODevice, QTimer
 from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtWidgets import QApplication, QMessageBox
 import time
-# USAR threading para actualizar el puerto serial 
+
 class MainWindow(WidgetsIn): 
 
     def __init__(self) -> None: 
