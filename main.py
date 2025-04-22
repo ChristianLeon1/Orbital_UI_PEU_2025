@@ -6,7 +6,8 @@
 # Estación terrena para competencia CANSAT PEU 2025 
 # Interfaz de usuario para la estación terrena de cansat
 
-import sys
+import sys 
+import os
 import pandas as pd 
 import folium 
 from pathlib import Path
@@ -351,6 +352,7 @@ class MainWindow(WidgetsIn):
         return msg_box.exec()
 
 if __name__ == "__main__": 
+    os.environ["QT3D_RENDER"] = "opengl"
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
