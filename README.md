@@ -10,7 +10,7 @@ Aplicación de estación terrena en Python para recibir y visualizar datos de sa
 - Recepción de datos en tiempo real vía puerto serial/USB.
 - Visualización de telemetría (actitud, temperatura, voltaje, etc.).
 - Gráficos dinámicos actualizados en tiempo real.
-- Almacenamiento de datos en formato `.csv` o `.log`.
+- Almacenamiento de datos en formato `.csv`. 
 - Interfaz gráfica intuitiva con PySide6.
 - Compatibilidad multiplataforma.
 
@@ -25,7 +25,7 @@ Aplicación de estación terrena en Python para recibir y visualizar datos de sa
 ```bash
 git clone https://github.com/tu-usuario/ground-station.git
 cd ground-station
-
+```
 
 <!-- ## Dependencias linux  -->
 <!---->
