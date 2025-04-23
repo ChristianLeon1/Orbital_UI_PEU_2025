@@ -22,18 +22,37 @@ Aplicación de estación terrena en Python para recibir y visualizar datos de sa
 ## Instalación
 
 ### Linux, macOS
-#### 1. Clonar el repositorio:
+1. Clonar el repositorio:
 ```bash
 git clone https://github.com/ChristianLeon1/Orbital_UI_PEU_2025.git 
 cd Orbital_UI_PEU_2025 
 ```
 
-#### 2. Crear entorno virtual y dependencias: 
+2. Crear entorno virtual y dependencias: 
 
 ```bash 
 python3 venv -m .venv 
 source .venv\bin\activate
 pip3 install -r requirements.txt 
+```
+
+### Windows 
+
+1. Clonar el repositorio (recomendado descargar el archivo ZIP del proyecto). 
+2. Dentro de la carpeta descargada abrir una terminal y ejecutar: 
+
+```bash 
+python venv -m .venv 
+.\.venv\Scripts\activate 
+pip3 install -r requirements.txt 
+```
+
+## Uso 
+
+Ejecutar: 
+
+```bash
+python main.py
 ```
 
 <!-- ## Dependencias linux  -->
