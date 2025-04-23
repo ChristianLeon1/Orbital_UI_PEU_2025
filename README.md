@@ -31,7 +31,7 @@ cd Orbital_UI_PEU_2025
 2. Crear entorno virtual y dependencias: 
 
 ```bash 
-python3 venv -m .venv 
+python3 -m venv .venv 
 source .venv\bin\activate
 pip3 install -r requirements.txt 
 ```
@@ -42,7 +42,7 @@ pip3 install -r requirements.txt
 2. Dentro de la carpeta descargada abrir una terminal y ejecutar: 
 
 ```bash 
-python venv -m .venv 
+python -m venv .venv 
 .\.venv\Scripts\activate 
 pip3 install -r requirements.txt 
 ```
