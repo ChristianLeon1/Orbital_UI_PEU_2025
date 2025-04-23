@@ -21,7 +21,8 @@ Aplicación de estación terrena en Python para recibir y visualizar datos de sa
 
 ## Instalación
 
-### 1. Clonar el repositorio
+### Linux 
+#### Clonar el repositorio
 ```bash
 git clone https://github.com/tu-usuario/ground-station.git
 cd ground-station
