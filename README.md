@@ -8,7 +8,7 @@ Aplicación de estación terrena en Python para recibir y visualizar datos de sa
 
 ## Características principales
 - Recepción de datos en tiempo real vía puerto serial/USB.
-- Visualización de telemetría (actitud, temperatura, voltaje, etc.).
+- Visualización de telemetría (altitud, temperatura, voltaje, etc.).
 - Gráficos dinámicos actualizados en tiempo real.
 - Almacenamiento de datos en formato `.csv`. 
 - Interfaz gráfica intuitiva con PySide6.
@@ -21,11 +21,19 @@ Aplicación de estación terrena en Python para recibir y visualizar datos de sa
 
 ## Instalación
 
-### Linux 
-#### Clonar el repositorio
+### Linux, macOS
+#### 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/ground-station.git
-cd ground-station
+git clone https://github.com/ChristianLeon1/Orbital_UI_PEU_2025.git 
+cd Orbital_UI_PEU_2025 
+```
+
+#### 2. Crear entorno virtual y dependencias: 
+
+```bash 
+python3 venv -m .venv 
+source .venv\bin\activate
+pip3 install -r requirements.txt 
 ```
 
 <!-- ## Dependencias linux  -->
