@@ -1,6 +1,6 @@
 from pathlib import Path
-from PySide6.QtCore import QUrl, Qt
-from PySide6.QtGui import QVector3D, QColor
+from PySide6.QtCore import QUrl, Qt, QPropertyAnimation
+from PySide6.QtGui import QVector3D, QColor, QQuaternion
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 from PySide6.Qt3DCore import Qt3DCore
 from PySide6.Qt3DRender import Qt3DRender
@@ -9,106 +9,73 @@ from PySide6.Qt3DExtras import Qt3DExtras
 class Ventana_3d(Qt3DExtras.Qt3DWindow): 
     def __init__(self): 
         super().__init__() 
+        
+        self.defaultFrameGraph().setClearColor(QColor(21, 21, 21))
+        self.model_path = Path(__file__).parent.parent / "models" / "CANSAT.obj" 
+        self.centroide = self.calcular_centro(self.model_path)  
 
-        # Entidad raiz 
         self.root_entity = Qt3DCore.QEntity() 
-        
-        # Configurar camaras 
-
         self.camara = self.camera() 
-
-        self.camara.setPosition(QVector3D(-10, 0, 200))
-        self.camara.setViewCenter(QVector3D(-10, 0, 0))
+        self.camara.setPosition(QVector3D(0, 0, 200))
+        self.camara.setViewCenter(QVector3D(0,0,0))
         self.camara.setUpVector(QVector3D(0, 1, 0))
-        self.camara.setFieldOfView(100) 
-       # Configurar luces
+        self.camara.setFieldOfView(100)  
+        self.camera_transform = Qt3DCore.QTransform()
+        self.camera_entity = Qt3DCore.QEntity(self.root_entity)
+
         self.setup_lights()
-        # Cargar modelo 3D
         self.load_3d_model()
-        
-        # Configurar control de cámara
+        self.setRootEntity(self.root_entity) 
+
         cam_controller = Qt3DExtras.QOrbitCameraController(self.root_entity)
         cam_controller.setLinearSpeed(50)
         cam_controller.setLookSpeed(180)
         cam_controller.setCamera(self.camara)
 
-        self.setRootEntity(self.root_entity)
    
-    def setup_lights(self):
-    # Luz puntual 1
-        light_entity = Qt3DCore.QEntity(self.root_entity)
-        light = Qt3DRender.QPointLight(light_entity)
-        light.setColor(QColor(255, 255, 255))
-        light.setIntensity(1.0)
-        light_entity.addComponent(light)
+    def setup_lights(self): 
+
+        self.spotlight_entity = Qt3DCore.QEntity(self.root_entity)
         
-        light_transform = Qt3DCore.QTransform()
-        light_transform.setTranslation(QVector3D(-10, 0, 200))  # Posición ajustada
-        light_entity.addComponent(light_transform)
-
-        # Luz puntual 2
-        light_entity2 = Qt3DCore.QEntity(self.root_entity)
-        light2 = Qt3DRender.QPointLight(light_entity2)
-        light2.setColor(QColor(255, 255, 255))
-        light2.setIntensity(1.0)
-        light_entity2.addComponent(light2)
-
-        light_transform2 = Qt3DCore.QTransform()
-        light_transform2.setTranslation(QVector3D(10, 10, 0))  # Posición diferente
-        light_entity2.addComponent(light_transform2)
-
-        # Luz direccional (en lugar de luz ambiental)
-        directional_light_entity = Qt3DCore.QEntity(self.root_entity)
-        directional_light = Qt3DRender.QDirectionalLight(directional_light_entity)
-        directional_light.setColor(QColor(200, 200, 200))  # Color de la luz
-        directional_light.setIntensity(1.0)  # Intensidad de la luz
-        directional_light_entity.addComponent(directional_light)
-
-        # Configurar la dirección de la luz
-        light_direction = QVector3D(-1, -1, -1)  # Dirección de la luz
-        light_direction.normalize()  # Normalizar el vector
-        directional_light.setWorldDirection(light_direction)
+        self.spotlight = Qt3DRender.QSpotLight(self.spotlight_entity)
+        self.spotlight.setColor(QColor(255, 255, 255))
+        self.spotlight.setIntensity(1.5)
+        self.spotlight.setCutOffAngle(150)
+        self.spotlight.setConstantAttenuation(1.0)
+        self.spotlight.setLinearAttenuation(0.0)
+        self.spotlight.setQuadraticAttenuation(0.0)
+        
+        self.spotlight_transform = Qt3DCore.QTransform()
+        self.spotlight_entity.addComponent(self.spotlight_transform)
+        self.spotlight_entity.addComponent(self.spotlight)
+        self.spotlight_transform.setTranslation(QVector3D(0,0,200))
 
     def load_3d_model(self):
-    # Cargar materiales desde el .mtl
+
         materials = self.load_mtl_materials("CANSAT.mtl")
         
-        # Crear una entidad principal para el modelo
         model_entity = Qt3DCore.QEntity(self.root_entity)
         
-        # Cargar malla
         mesh = Qt3DRender.QMesh(model_entity)
-        model_path = Path(__file__).parent / "CANSAT.obj"
-        mesh.setSource(QUrl.fromLocalFile(str(model_path)))
+        self.model_path = Path(__file__).parent.parent / "models" / "CANSAT.obj" 
+        mesh.setSource(QUrl.fromLocalFile(str(self.model_path)))
         
-        # Asignar el primer material (ejemplo básico)
-        # Nota: Esto aplicará solo un material. Para múltiples materiales, necesitas subentidades.
-        material_name = "material96"  # Cambia esto según tu modelo
+        material_name = "material96"  
         if material_name in materials:
-            mtl_data = materials[material_name]
             material = Qt3DExtras.QPhongMaterial(model_entity)
-            material.setDiffuse(QColor(
-                int(mtl_data['Kd'][0] * 255),
-                int(mtl_data['Kd'][1] * 255),
-                int(mtl_data['Kd'][2] * 255)
-            ))
-            material.setSpecular(QColor(
-                int(mtl_data['Ks'][0] * 255),
-                int(mtl_data['Ks'][1] * 255),
-                int(mtl_data['Ks'][2] * 255)
-            ))
+            material.setDiffuse(QColor(47, 68, 124))
+            material.setSpecular(QColor(30, 30, 30))  
+            material.setShininess(100) 
         
-        # Configurar transformación
-        transform = Qt3DCore.QTransform()
-        transform.setScale(0.5)
-        
-        # Ensamblar componentes
+        self.model_transform = Qt3DCore.QTransform()
+        self.model_transform.setScale(1) 
+
         model_entity.addComponent(mesh)
         model_entity.addComponent(material)
-        model_entity.addComponent(transform)
+        model_entity.addComponent(self.model_transform) 
 
     def load_mtl_materials(self, mtl_path):
-        mtl_file = Path(__file__).parent / mtl_path
+        mtl_file = Path(__file__).parent.parent / "models" / mtl_path
         materials = {}
         current_mtl = None
 
@@ -136,3 +103,23 @@ class Ventana_3d(Qt3DExtras.Qt3DWindow):
 
         return materials
 
+    def calcular_centro(self, obj_path):
+        vertices = []
+        with open(obj_path, 'r') as f:
+            for line in f:
+                if line.startswith('v '):
+                    coords = list(map(float, line.strip().split()[1:4]))
+                    vertices.append(coords)
+        
+        # Calcular el centroide (promedio de vértices)
+        if not vertices:
+            return (0, 0, 0)
+        centro_x = sum(v[0] for v in vertices) / len(vertices)
+        centro_y = sum(v[1] for v in vertices) / len(vertices)
+        centro_z = sum(v[2] for v in vertices) / len(vertices)
+        return [centro_x, centro_y, centro_z]
+ 
+    def set_rotation(self, pitch, yaw, roll):
+        # Orden de aplicación: roll (Z), pitch (X), yaw (Y)
+        euler_rotation = QVector3D(roll, pitch, yaw)
+        self.model_transform.setRotation(QQuaternion.fromEulerAngles(euler_rotation))
