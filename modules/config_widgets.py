@@ -174,8 +174,8 @@ class WidgetsIn(QMainWindow):
         self.simulacion_frame = CustomFrame(self, "#151515")
         self.simulacion_container = QVBoxLayout(self.simulacion_frame) 
         self.ventana_3d = Ventana_3d() 
-        self.ventana_3d.setup_lights() 
-        self.ventana_3d.load_3d_model() 
+        # self.ventana_3d.setup_lights() 
+        # self.ventana_3d.load_3d_model()  
 
         self.ventana_container = QWidget.createWindowContainer(self.ventana_3d)
         self.simulacion_container.addWidget(self.ventana_container)

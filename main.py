@@ -49,7 +49,8 @@ class MainWindow(WidgetsIn):
                                 'Brujula':[],
                                 'Bateria':[],
                                 'CO2':[],
-                                'Humedad':[]
+                                'Humedad':[],
+                                'Velocidad':[]
                                 })
 
         self.graficas = pd.DataFrame({'Tiempo': [],
@@ -77,6 +78,12 @@ class MainWindow(WidgetsIn):
         #Configuración serial 
         self.ser = QSerialPort()        
         self.ActualizarSerial() 
+        
+        # Timer temporal para translación 
+
+        self.simulacion_timer = QTimer(self)
+        self.simulacion_timer.timeout.connect(self.RotarModelo3D)
+        self.rotacion = 0 
 
         # Señales 
         #Botones 
@@ -106,6 +113,10 @@ class MainWindow(WidgetsIn):
         #Calibración 
         self.boton_posicion.triggered.connect(self.ObjetivoPos)
         self.boton_calib_altura.triggered.connect(self.CalibAltura)
+
+    def RotarModelo3D(self): 
+        self.ventana_3d.set_rotation(self.cp["Ángulo X"][self.cp_index],self.cp["Ángulo Y"][self.cp_index],self.cp["Ángulo Z"][self.cp_index]) 
+        self.simulacion_timer.start(33)
 
     def CalibAltura(self): 
         try:
@@ -216,7 +227,8 @@ class MainWindow(WidgetsIn):
                                           'CO2': [],
                                           'Presión':[], 
                                           'Temperatura':[]})
-        new_row = {'Tiempo': self.cp['Tiempo de misión'][self.cp_index],
+        new_row = {
+                  'Tiempo': self.cp['Tiempo de misión'][self.cp_index],
                   'CO2': self.cp['CO2'][self.cp_index],
                   'Presión': self.cp['Presión'][self.cp_index], 
                   'Temperatura': self.cp['Temperatura'][self.cp_index]
@@ -234,36 +246,37 @@ class MainWindow(WidgetsIn):
             self.altura_cp.bar.setValue(int(self.cp['Altitud'][self.cp_index]))
         else: 
             self.altura_cp.bar.setValue(500) 
-
-        try: 
-            if self.cp_index > 20: 
-            
-                velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) /
-                                  (self.cp['Tiempo de misión'][self.cp_index - 20] - self.cp['Tiempo de misión'][self.cp_index]), 2)
-
-                if velocidad == 0: 
-                    self.velocidad.setText(f"0.0") 
-                    self.velocimetro.value = 0
-                else: 
-                    self.velocidad.setText(f"{velocidad}") 
-                self.velocimetro.updateValue((abs(velocidad)))
-            else: 
-                self.velocidad.setText(f"0.0") 
-        except: 
-            pass 
-
         
-        self.graficas_timer.start(79)
+        if self.cp['Velocidad'][self.cp_index] == 0: 
+            self.velocidad.setText(f"0.0")
+            self.velocimetro.updateValue(0) 
+        else: 
+            self.velocidad.setText(f"{self.cp['Velocidad'][self.cp_index]}") 
+            self.velocimetro.updateValue(abs(self.cp['Velocidad'][self.cp_index]))
+        
+        self.graficas_timer.start(100)
+
+    def CalculoVelocidad(self): 
+        try: 
+            if self.cp_index > 20:  
+                velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) /
+                                  (self.cp['Tiempo de misión'][self.cp_index - 20] - self.cp['Tiempo de misión'][self.cp_index]), 2) 
+                return velocidad
+            else: 
+                return 0.0
+        except: 
+            return 0.0 
+
         
     def LeerDatos(self): 
         if not self.ser.canReadLine(): 
             return 
-        try: 
+        try:  
             new_row = str(self.ser.readLine(),'utf-8')            
             new_row = new_row.strip("\n").split(',')
             if len(new_row) != 23: 
                 return 
-
+            
             if "\\r" in new_row: 
                 new_row[22] = new_row[22].rsplit("\\r")
 
@@ -290,8 +303,9 @@ class MainWindow(WidgetsIn):
                 'Brujula': new_row[19],
                 'Bateria': new_row[20],
                 'CO2': new_row[21],
-                'Humedad': new_row[22]
-            }
+                'Humedad': new_row[22], 
+                'Velocidad': str(self.CalculoVelocidad())
+            } 
 
             for i in self.cp.columns: 
                 if new_row[i].isdigit(): 
@@ -300,7 +314,12 @@ class MainWindow(WidgetsIn):
                     try: 
                         new_row[i] = float(new_row[i])
                     except: 
-                        pass 
+                        pass  
+            
+            # Conversiones. 
+            new_row["Aceleración en X"] = new_row["Aceleración en X"] * 9.81
+            new_row["Aceleración en Y"] = new_row["Aceleración en Y"] * 9.81
+            new_row["Aceleración en Z"] = new_row["Aceleración en Z"] * 9.81
             
             self.cp = pd.concat([self.cp, pd.DataFrame([new_row])], ignore_index=True)
             
@@ -314,9 +333,10 @@ class MainWindow(WidgetsIn):
                 self.ActualizarGPS()
                 self.ActualizarSensores() 
                 self.ActualizarGraficas()
+                self.RotarModelo3D()
                 self.flag_act = False
-        except:
-            pass
+        except Exception as e: 
+            pass 
 
     def DescPort(self): 
         self.boton_conec_ser.setEnabled(True)
