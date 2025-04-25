@@ -39,6 +39,9 @@ class SatelliteDataGenerator:
         self.altitude = 0 
         self.current_compass = 0.0  # Valor inicial de la brújula
         self.compass_direction = 1  # 1 para aumentar, -1 para disminuir
+        self.angulo_x = 0 
+        self.angulo_y = 0 
+        self.angulo_z = 0
         
     def generate_data(self, num_samples=100):
         for _ in range(num_samples):
@@ -69,6 +72,16 @@ class SatelliteDataGenerator:
                 self.current_compass -= 360
                 
             mission_status = 1
+
+            self.angulo_x += 1 
+            if self.angulo_x > 360: 
+                self.angulo_x = 0
+            self.angulo_y += 2 
+            if self.angulo_y > 360: 
+                self.angulo_y = 0 
+            self.angulo_z += 0.25 
+            if self.angulo_z > 360: 
+                self.angulo_z = 0 
             
             new_row = {
                 'Paquetes': np.int64(self.package_count),
@@ -83,13 +96,13 @@ class SatelliteDataGenerator:
                 'Altitud': round(self.altitude, 3),
                 'Aceleración en X': round(random.uniform(-2, 2), 3),
                 'Aceleración en Y': round(random.uniform(-2, 2), 3),
-                'Aceleración en Z': round(random.uniform(9.5, 10.0), 3),
+                'Aceleración en Z': round(random.uniform(0.95, 1.02), 3),
                 'Giro X': round(random.uniform(0, 360), 3),
                 'Giro Y': round(random.uniform(0, 360), 3),
                 'Giro Z': round(random.uniform(0, 360), 3),
-                'Ángulo X': round(random.uniform(0, 360), 3),
-                'Ángulo Y': round(random.uniform(0, 360), 3),
-                'Ángulo Z': round(random.uniform(0, 360), 3),
+                'Ángulo X': self.angulo_x,
+                'Ángulo Y': self.angulo_y,
+                'Ángulo Z': self.angulo_z,
                 'Brujula': round(self.current_compass, 3),  # Valor lineal 0-180°
                 'Bateria': round(random.uniform(0, 100), 3),
                 'CO2': round(random.uniform(300, 2000), 3),
