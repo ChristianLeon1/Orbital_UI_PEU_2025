@@ -11,8 +11,6 @@ class Ventana_3d(Qt3DExtras.Qt3DWindow):
         super().__init__() 
         
         self.defaultFrameGraph().setClearColor(QColor(21, 21, 21))
-        self.model_path = Path(__file__).parent.parent / "models" / "CANSAT.obj" 
-        self.centroide = self.calcular_centro(self.model_path)  
 
         self.root_entity = Qt3DCore.QEntity() 
         self.camara = self.camera() 
@@ -31,7 +29,6 @@ class Ventana_3d(Qt3DExtras.Qt3DWindow):
         cam_controller.setLinearSpeed(50)
         cam_controller.setLookSpeed(180)
         cam_controller.setCamera(self.camara)
-
    
     def setup_lights(self): 
 
@@ -103,22 +100,6 @@ class Ventana_3d(Qt3DExtras.Qt3DWindow):
 
         return materials
 
-    def calcular_centro(self, obj_path):
-        vertices = []
-        with open(obj_path, 'r') as f:
-            for line in f:
-                if line.startswith('v '):
-                    coords = list(map(float, line.strip().split()[1:4]))
-                    vertices.append(coords)
-        
-        # Calcular el centroide (promedio de vértices)
-        if not vertices:
-            return (0, 0, 0)
-        centro_x = sum(v[0] for v in vertices) / len(vertices)
-        centro_y = sum(v[1] for v in vertices) / len(vertices)
-        centro_z = sum(v[2] for v in vertices) / len(vertices)
-        return [centro_x, centro_y, centro_z]
- 
     def set_rotation(self, pitch, yaw, roll):
         # Orden de aplicación: roll (Z), pitch (X), yaw (Y)
         euler_rotation = QVector3D(roll, pitch, yaw)
