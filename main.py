@@ -111,7 +111,6 @@ class MainWindow(WidgetsIn):
         self.graficas_timer.timeout.connect(self.ActualizarGraficas)
 
         #Calibración 
-        self.boton_posicion.triggered.connect(self.ObjetivoPos)
         self.boton_calib_altura.triggered.connect(self.CalibAltura)
 
     def RotarModelo3D(self): 
@@ -124,18 +123,6 @@ class MainWindow(WidgetsIn):
             self.statusBar().showMessage(f'Se guardo correctamente la Calibración de la altura: {self.ajuste_altura}', 8000)
         except: 
             self.statusBar().showMessage(f'No se ingreso un dato válido para calibrar la altura: {self.altura.text()}', 8000)
-
-    def ObjetivoPos(self): 
-        try: 
-            latitud = float(self.latitud.text())
-            longitud = float(self.longitud.text()) 
-            self.pos_objetivo = [latitud, longitud]
-            self.statusBar().showMessage(f'Se guardo la ubicación del objetivo correctamente: {self.pos_objetivo}', 8000)
-            self.maps = folium.Map(location = self.pos_objetivo, zoom_start=16)
-            folium.CircleMarker(location=self.pos_objetivo, radius=10, color="#FFE000", fill=True, border=True, opacity=0.7).add_to(self.maps)
-            self.gps_w.setHtml(self.maps.get_root().render())
-        except: 
-            self.statusBar().showMessage(f'No se ingreso correctamente las coordenadas del objetivo. [{self.latitud.text()}, {self.longitud.text()}]', 8000)
 
     def GuardarBaudRate(self,text):
         self.baud_rate = int(text)
@@ -197,7 +184,10 @@ class MainWindow(WidgetsIn):
 
         if not (self.posicion[0] == self.cp['Latitud'][self.cp_index] and self.posicion[1] == self.cp['Longitud'][self.cp_index]):
             self.posicion = [self.cp['Latitud'][self.cp_index], self.cp['Longitud'][self.cp_index]]
-            self.maps = folium.Map(location=self.posicion, zoom_start=18)
+            self.maps = folium.Map(location=self.posicion, zoom_start=18,
+                                   tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                                   attr='Esri World Imagery'
+                                   )
             folium.CircleMarker(location=self.posicion, radius=6, color="red", fill=True, border=True, opacity=0.7).add_to(self.maps)
             self.gps_w.setHtml(self.maps.get_root().render())
         self.gps_timer.start(4007)
@@ -317,9 +307,9 @@ class MainWindow(WidgetsIn):
                         pass  
             
             # Conversiones. 
-            new_row["Aceleración en X"] = new_row["Aceleración en X"] * 9.81
-            new_row["Aceleración en Y"] = new_row["Aceleración en Y"] * 9.81
-            new_row["Aceleración en Z"] = new_row["Aceleración en Z"] * 9.81
+            new_row["Aceleración en X"] = round(new_row["Aceleración en X"] * 9.81, 3)
+            new_row["Aceleración en Y"] = round(new_row["Aceleración en Y"] * 9.81, 3)
+            new_row["Aceleración en Z"] = round(new_row["Aceleración en Z"] * 9.81, 3) 
             
             self.cp = pd.concat([self.cp, pd.DataFrame([new_row])], ignore_index=True)
             

@@ -165,8 +165,9 @@ class WidgetsIn(QMainWindow):
 
         self.maps = folium.Map(
             location=[19.4284, -99.1276],
-            zoom_start=4,
-            id="mapid"  # ID fijo para el contenedor del mapa
+            zoom_start=4, 
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", 
+            attr='Esri World Imagery'
         )
         self.gps_w.setHtml(self.maps.get_root().render())
 
