@@ -56,29 +56,24 @@ class WidgetsIn(QMainWindow):
         self.baud_opts.addItems(['9600', '19200', '31250', '38400', '57600', '74880', '115200', '230400', '250000', '460800', '500000', '921600', '1000000', '2000000'])
         self.baud_opts.setCurrentIndex(-1)
         self.serial_opts = QComboBox() 
-        label_serial = QLabel("Puertos Disponibles: ")
+        label_serial = QLabel("Puertos Disponibles: ") 
+
+        #Configuración de canales 
+        label_canal = QLabel("Canal: ") 
+        self.canal = QLineEdit()
+        self.canal.setFixedSize(60) 
+        self.canal.setStyleSheet("background: #212121") 
         
-        #Agregar ubicación del objetivo
-        label_pos = QLabel("Ubicación del objetivo: ")
-        self.latitud = QLineEdit()
-        self.longitud = QLineEdit()
-        self.altura = QLineEdit()
-        self.latitud.setFixedWidth(60)
-        self.longitud.setFixedWidth(60)
-        self.altura.setFixedWidth(60)
-        self.latitud.setStyleSheet("background: #212121")
-        self.longitud.setStyleSheet("background: #212121")
-        self.altura.setStyleSheet("background: #212121")
         # Botones 
         self.boton_actualizar = QAction("Actualizar Puertos")
         self.boton_conec_ser = QAction("Conectar")
         self.boton_descon = QAction("Desconectar")
-        self.boton_posicion = QAction("Actualizar")
         self.boton_calib_altura = QAction("Calibrar Altura")
         self.boton_act_servo = QAction("Activar Servo")
         self.boton_des_servo = QAction("Desactivar Servo")
         self.boton_conec_ser.setEnabled(False)
         self.boton_descon.setEnabled(False)
+        self.boton_act_canal = QAction("Actualizar Canal")
         
         #Widgets en el toolbar 
         self.toolbar.addWidget(label_baud)
@@ -91,12 +86,7 @@ class WidgetsIn(QMainWindow):
         self.toolbar.addAction(self.boton_conec_ser) 
         self.toolbar.addAction(self.boton_descon) 
         self.toolbar.addSeparator()
-        self.toolbar.addWidget(label_pos)
-        self.toolbar.addWidget(self.latitud)
-        self.toolbar.addWidget(self.longitud)
-        self.toolbar.addAction(self.boton_posicion)
         self.toolbar.addSeparator()
-        self.toolbar.addWidget(self.altura)
         self.toolbar.addAction(self.boton_calib_altura)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.boton_act_servo)
@@ -111,15 +101,15 @@ class WidgetsIn(QMainWindow):
         self.contador_paquetes_label = CustomLabel("C P:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.hora_label = CustomLabel("HORA:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
         self.bateria_label = CustomLabel("BATERIA:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
-        self.estado_label = CustomLabel("ESTADO:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
+        self.humedad_label = CustomLabel("HUMEDAD:", self.frame_sensores, 20, "#151515", Qt.AlignLeft)
 
         self.tiempo_vuelo = CustomLabel(parent=self.frame_sensores)
         self.contador_paquetes = CustomLabel(parent=self.frame_sensores)
         self.hora = CustomLabel(parent=self.frame_sensores)
         self.bateria = CustomLabel(parent=self.frame_sensores)
-        self.estado = CustomLabel(parent=self.frame_sensores)
+        self.humedad = CustomLabel(parent=self.frame_sensores)
 
-        self.altura_cp = AltitudeWidget(parent=self, label="ALTITUD")
+        self.altura_cp = AltitudeWidget(parent=self, label="ALTITUD") 
 
         self.frame_medidores = CustomFrame(parent=self, background="#151515")
         self.velocidad_label = CustomLabel("VELOCIDAD", self.frame_medidores, 20, "#151515")
@@ -154,14 +144,10 @@ class WidgetsIn(QMainWindow):
         self.carbono_container.addWidget(self.carbono)
         self.temp_container.addWidget(self.temp)
         self.presion_container.addWidget(self.presion)
-        self.carbono.setYRange(0,5)
-        self.temp.setYRange(0,40)
-        self.presion.setYRange(75000,80000)
 
         # GPS
         self.gps_frame = CustomFrame(self,"#151515")
         self.gps_w = QWebEngineView(self.gps_frame)
-        # self.maps = folium.Map(location = [19.4284, -99.1276], zoom_start=4)
 
         self.maps = folium.Map(
             location=[19.4284, -99.1276],
@@ -175,11 +161,25 @@ class WidgetsIn(QMainWindow):
         self.simulacion_frame = CustomFrame(self, "#151515")
         self.simulacion_container = QVBoxLayout(self.simulacion_frame) 
         self.ventana_3d = Ventana_3d() 
-        # self.ventana_3d.setup_lights() 
-        # self.ventana_3d.load_3d_model()  
 
         self.ventana_container = QWidget.createWindowContainer(self.ventana_3d)
         self.simulacion_container.addWidget(self.ventana_container)
+        
+        # Datos giroscopio 
+        self.giroscopio_frame = CustomFrame(parent=self, background="#151515") 
+        self.velocidad_angular_label = CustomLabel("VELOCIDAD ANGULAR",parent=self.giroscopio_frame, background="#151515") 
+        self.vel_ang_x_label = CustomLabel("X",parent=self.giroscopio_frame, background="#151515", align=Qt.AlignLeft)
+        self.vel_ang_y_label = CustomLabel("Y",parent=self.giroscopio_frame, background="#151515", align=Qt.AlignLeft)
+        self.vel_ang_z_label = CustomLabel("Z",parent=self.giroscopio_frame, background="#151515", align=Qt.AlignLeft) 
+
+
+        self.vel_ang_x = CustomLabel("", parent=self.giroscopio_frame)
+        self.vel_ang_y = CustomLabel("", parent=self.giroscopio_frame)
+        self.vel_ang_z = CustomLabel("", parent=self.giroscopio_frame) 
+
+        self.frame_estado = CustomFrame(parent=self, background="#151515") 
+        self.estado_label = CustomLabel("ESTADO DE LA MISIÓN:", parent=self.frame_estado, background="151515")
+        self.estado = CustomLabel(parent=self.frame_estado) 
 
         # #Tab monitor serial
         # self.tab_serial_monitor.setStyleSheet("border-radius: 5px;")
@@ -232,13 +232,13 @@ class WidgetsIn(QMainWindow):
         self.contador_paquetes_label.setGeometry(int(width_f*0.08), 2*int(height_f/6) - 15, int(width_f*0.37), 30)        
         self.hora_label.setGeometry(int(width_f*0.08), 3*int(height_f/6) - 15, int(width_f*0.37), 30)
         self.bateria_label.setGeometry(int(width_f*0.08), 4*int(height_f/6) - 15, int(width_f*0.37), 30)
-        self.estado_label.setGeometry(int(width_f*0.08), 5*int(height_f/6) - 15, int(width_f*0.37), 30)
+        self.humedad_label.setGeometry(int(width_f*0.08), 5*int(height_f/6) - 15, int(width_f*0.37), 30)
 
         self.tiempo_vuelo.setGeometry(int(width_f*0.55), 1*int(height_f/6) - 15, int(width_f*0.35), 30)
         self.contador_paquetes.setGeometry(int(width_f*0.55), 2*int(height_f/6) - 15, int(width_f*0.35), 30)
         self.hora.setGeometry(int(width_f*0.55), 3*int(height_f/6) - 15, int(width_f*0.35), 30)
         self.bateria.setGeometry(int(width_f*0.55), 4*int(height_f/6) - 15, int(width_f*0.35), 30)
-        self.estado.setGeometry(int(width_f*0.55), 5*int(height_f/6) - 15, int(width_f*0.35), 30)
+        self.humedad.setGeometry(int(width_f*0.55), 5*int(height_f/6) - 15, int(width_f*0.35), 30)
 
         #Altitud 
         self.altura_cp.frame.setGeometry(int(width*0.67), int(height*0.4), int(width*0.085), int(height*0.55))
@@ -261,6 +261,25 @@ class WidgetsIn(QMainWindow):
 
         # Simulación 3d 
 
-        self.simulacion_frame.setGeometry(int(0.005*width), int(0.08*height), int(0.41*width), int(0.5*height))
-        # width_f, height_f = self.simulacion_frame.geometry().width(), self.simulacion_frame.geometry().height() 
-        # self.ventana_3d.setGeometry(int(0.05*width_f), int(0.05*height_f), int(0.9*width_f), int(0.9*height_f))
+        self.simulacion_frame.setGeometry(int(0.005*width), int(0.08*height), int(0.25*width), int(0.5*height)) 
+
+        self.giroscopio_frame.setGeometry(int(0.26*width), int(0.08*height), int(0.155*width), int(0.3*height)) 
+        width_f, height_f = self.giroscopio_frame.geometry().width(), self.giroscopio_frame.geometry().height()  
+
+        self.velocidad_angular_label.setGeometry(int(width_f*0.05), int(height_f/7) - 15, int(width_f*0.9), 30)
+
+        self.vel_ang_x_label.setGeometry(int(width_f*0.1), 2*int(height_f/5) - 15, int(width_f*0.2), 30)
+        self.vel_ang_y_label.setGeometry(int(width_f*0.1), 3*int(height_f/5) - 15, int(width_f*0.2), 30)
+        self.vel_ang_z_label.setGeometry(int(width_f*0.1), 4*int(height_f/5) - 15, int(width_f*0.2), 30)
+
+        self.vel_ang_x.setGeometry(int(width_f*0.45), 2*int(height_f/5) - 15, int(width_f*0.45), 30)
+        self.vel_ang_y.setGeometry(int(width_f*0.45), 3*int(height_f/5) - 15, int(width_f*0.45), 30)
+        self.vel_ang_z.setGeometry(int(width_f*0.45), 4*int(height_f/5) - 15, int(width_f*0.45), 30) 
+
+        # Estado de la misión  
+
+        self.frame_estado.setGeometry(int(0.26*width), int(0.395*height), int(0.155*width), int(0.185*height))
+        width_f, height_f = self.frame_estado.geometry().width(), self.frame_estado.geometry().height()  
+        self.estado_label.setGeometry(int(width_f*0.05), int(height_f/3) - 15, int(width_f*0.9), 30) 
+        self.estado.setGeometry(int(width_f*0.1), 2*int(height_f/3) - 20, int(width_f*0.8), 40) 
+

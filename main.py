@@ -117,13 +117,44 @@ class MainWindow(WidgetsIn):
         self.ventana_3d.set_rotation(self.cp["Ángulo X"][self.cp_index],self.cp["Ángulo Y"][self.cp_index],self.cp["Ángulo Z"][self.cp_index]) 
         self.simulacion_timer.start(33)
 
-    def CalibAltura(self): 
-        try:
-            self.ajuste_altura = float(self.altura.text())
-            self.statusBar().showMessage(f'Se guardo correctamente la Calibración de la altura: {self.ajuste_altura}', 8000)
-        except: 
-            self.statusBar().showMessage(f'No se ingreso un dato válido para calibrar la altura: {self.altura.text()}', 8000)
+    # Configuraciones iniciales 
 
+    def CalibAltura(self): 
+        try: 
+            for _ in range(10): 
+                self.ser.write("40".encode("utf-8"))
+        except: 
+            pass  
+
+    def ActivarServo(self): 
+        try: 
+            for _ in range(10): 
+                self.ser.write("10".encode("utf-8"))
+        except: 
+            pass  
+
+    def DesactivarServo(self):
+        try: 
+            for _ in range(10): 
+                self.ser.write("10".encode("utf-8"))
+        except: 
+            pass  
+    
+    def SeleccionCanales(self): 
+        if not self.canal.text().isdigit(): 
+            self.statusBar().showMessage(f'Seleccione un canal correcto.', 10000) 
+            return 
+
+        if not (0 <= int(self.canal.text()) and int(self.canal.text()) <= 126): 
+            self.statusBar().showMessage(f'Seleccione un canal válido (0 - 126)', 10000) 
+        try: 
+            for _ in range(10): 
+                self.ser.write(str(int(self.canal.text()) + 100).encode("utf-8"))
+        except: 
+            pass  
+
+
+        # self.canal.text()
     def GuardarBaudRate(self,text):
         self.baud_rate = int(text)
         if self.baud_rate != None and self.serial_opts.currentIndex() != -1: 
@@ -147,10 +178,7 @@ class MainWindow(WidgetsIn):
 
     def ConectarPort(self):  
         if self.baud_rate != None and self.port != None: 
-            self.boton_calib_altura.setEnabled(False)
-            self.boton_posicion.setEnabled(False)
-            # self.datos_a_serial.setEnabled(True)
-            self.boton_des_servo.setEnabled(True)
+            # self.boton_calib_altura.setEnabled(False)
             self.boton_act_servo.setEnabled(True)
             self.ser.setPortName(self.port)
             self.ser.setBaudRate(self.baud_rate)
@@ -173,13 +201,6 @@ class MainWindow(WidgetsIn):
         # self.serial_monitor.setText("") 
         pass
 
-    def ActivarServo(self): 
-        self.ser.write("1".encode("utf-8")) 
-
-
-    def DesactivarServo(self):
-        self.ser.write("0".encode("utf-8")) 
-
     def ActualizarGPS(self):
 
         if not (self.posicion[0] == self.cp['Latitud'][self.cp_index] and self.posicion[1] == self.cp['Longitud'][self.cp_index]):
@@ -188,7 +209,7 @@ class MainWindow(WidgetsIn):
                                    tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                                    attr='Esri World Imagery'
                                    )
-            folium.CircleMarker(location=self.posicion, radius=6, color="red", fill=True, border=True, opacity=0.7).add_to(self.maps)
+            folium.CircleMarker(location=self.posicion, radius=6, color="red", fill=True, border=True, opacity=1).add_to(self.maps)
             self.gps_w.setHtml(self.maps.get_root().render())
         self.gps_timer.start(4007)
 
@@ -202,7 +223,10 @@ class MainWindow(WidgetsIn):
         self.estado.setText(f"{self.cp['Estado de la misión'][self.cp_index]}") 
         self.bateria.setText(f"{self.cp['Bateria'][self.cp_index]}") 
         self.brujula.setText(f"{self.cp['Brujula'][self.cp_index]}")
-        self.aceleracion.setText(f"{self.cp['Aceleración en Z'][self.cp_index]}")
+        self.aceleracion.setText(f"{self.cp['Aceleración en Z'][self.cp_index]}") 
+        self.vel_ang_x.setText(f"{self.cp['Giro X'][self.cp_index]}")
+        self.vel_ang_y.setText(f"{self.cp['Giro y'][self.cp_index]}")
+        self.vel_ang_z.setText(f"{self.cp['Giro z'][self.cp_index]}")
         self.sensores_timer.start(500)
         
 
@@ -331,7 +355,6 @@ class MainWindow(WidgetsIn):
     def DescPort(self): 
         self.boton_conec_ser.setEnabled(True)
         self.boton_descon.setEnabled(False)
-        self.boton_posicion.setEnabled(True)
         self.boton_calib_altura.setEnabled(True)
         self.boton_des_servo.setEnabled(False)
         self.boton_des_servo.setEnabled(False)
