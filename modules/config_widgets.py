@@ -61,19 +61,23 @@ class WidgetsIn(QMainWindow):
         #Configuración de canales 
         label_canal = QLabel("Canal: ") 
         self.canal = QLineEdit()
-        self.canal.setFixedSize(60) 
+        self.canal.setFixedWidth(60) 
         self.canal.setStyleSheet("background: #212121") 
         
         # Botones 
         self.boton_actualizar = QAction("Actualizar Puertos")
         self.boton_conec_ser = QAction("Conectar")
         self.boton_descon = QAction("Desconectar")
-        self.boton_calib_altura = QAction("Calibrar Altura")
         self.boton_act_servo = QAction("Activar Servo")
         self.boton_des_servo = QAction("Desactivar Servo")
+        self.boton_calib_altura = QAction("Calibrar Altura")
+        self.boton_tiempo_vuelo = QAction("Comenzar Tiempo de Vuelo")
+        self.boton_act_canal = QAction("Actualizar Canal")
         self.boton_conec_ser.setEnabled(False)
         self.boton_descon.setEnabled(False)
-        self.boton_act_canal = QAction("Actualizar Canal")
+        self.boton_calib_altura.setEnabled(False)
+        self.boton_tiempo_vuelo.setEnabled(False)
+        self.boton_act_canal.setEnabled(False)
         
         #Widgets en el toolbar 
         self.toolbar.addWidget(label_baud)
@@ -86,11 +90,15 @@ class WidgetsIn(QMainWindow):
         self.toolbar.addAction(self.boton_conec_ser) 
         self.toolbar.addAction(self.boton_descon) 
         self.toolbar.addSeparator()
+        self.toolbar.addWidget(label_canal)
+        self.toolbar.addWidget(self.canal)
+        self.toolbar.addAction(self.boton_actualizar)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.boton_calib_altura)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.boton_act_servo)
         self.toolbar.addAction(self.boton_des_servo)
+        self.toolbar.addAction(self.boton_tiempo_vuelo)
 
         # Status Bar 
         self.setStatusBar(QStatusBar(self))

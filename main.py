@@ -102,16 +102,19 @@ class MainWindow(WidgetsIn):
         #Monitor serial 
         # self.limpiar_ser_mon.clicked.connect(self.LimpiarSerial)
         # self.datos_a_serial.returnPressed.connect(self.EnviarSerial)
-        self.boton_act_servo.triggered.connect(self.ActivarServo)
-        self.boton_des_servo.triggered.connect(self.DesactivarServo)
-
+    
         #Actualización de datos de los sensores
         self.sensores_timer.timeout.connect(self.ActualizarSensores)
         self.gps_timer.timeout.connect(self.ActualizarGPS)        
         self.graficas_timer.timeout.connect(self.ActualizarGraficas)
 
         #Calibración 
+        self.boton_act_servo.triggered.connect(self.ActivarServo)
+        self.boton_des_servo.triggered.connect(self.DesactivarServo)
+        self.boton_tiempo_vuelo.triggered.connect(self.IniciarTiempoVuelo)
         self.boton_calib_altura.triggered.connect(self.CalibAltura)
+        self.boton_act_canal.triggered.connect(self.ActualizarCanal)
+
 
     def RotarModelo3D(self): 
         self.ventana_3d.set_rotation(self.cp["Ángulo X"][self.cp_index],self.cp["Ángulo Y"][self.cp_index],self.cp["Ángulo Z"][self.cp_index]) 
@@ -119,42 +122,40 @@ class MainWindow(WidgetsIn):
 
     # Configuraciones iniciales 
 
-    def CalibAltura(self): 
+    def EnviarComandos(self, texto: str): 
         try: 
             for _ in range(10): 
-                self.ser.write("40".encode("utf-8"))
+                self.ser.write(texto.encode("utf-8"))
         except: 
-            pass  
+            self.statusBar().showMessage(f'No se envió correctamente el comando.', 10000)
 
     def ActivarServo(self): 
-        try: 
-            for _ in range(10): 
-                self.ser.write("10".encode("utf-8"))
-        except: 
-            pass  
-
+        self.EnviarComandos("10")
+        self.boton_conec_ser.setEnabled(False)
+        self.boton_des_servo.setEnabled(True)
+        
     def DesactivarServo(self):
-        try: 
-            for _ in range(10): 
-                self.ser.write("10".encode("utf-8"))
-        except: 
-            pass  
+        self.EnviarComandos("20") 
+        self.boton_conec_ser.setEnabled(True)
+        self.boton_des_servo.setEnabled(False)
+
+    def IniciarTiempoVuelo(self): 
+        self.EnviarComandos("30")
+        self.boton_tiempo_vuelo.setEnabled(False)
+
+    def CalibAltura(self): 
+        self.EnviarComandos("40")
     
-    def SeleccionCanales(self): 
+    def ActualizarCanal(self): 
         if not self.canal.text().isdigit(): 
             self.statusBar().showMessage(f'Seleccione un canal correcto.', 10000) 
             return 
 
         if not (0 <= int(self.canal.text()) and int(self.canal.text()) <= 126): 
             self.statusBar().showMessage(f'Seleccione un canal válido (0 - 126)', 10000) 
-        try: 
-            for _ in range(10): 
-                self.ser.write(str(int(self.canal.text()) + 100).encode("utf-8"))
-        except: 
-            pass  
 
-
-        # self.canal.text()
+        self.EnviarComandos(self.canal.text())
+        
     def GuardarBaudRate(self,text):
         self.baud_rate = int(text)
         if self.baud_rate != None and self.serial_opts.currentIndex() != -1: 
@@ -178,8 +179,10 @@ class MainWindow(WidgetsIn):
 
     def ConectarPort(self):  
         if self.baud_rate != None and self.port != None: 
-            # self.boton_calib_altura.setEnabled(False)
             self.boton_act_servo.setEnabled(True)
+            self.boton_tiempo_vuelo.setEnabled(True)
+            self.boton_calib_altura.setEnabled(True) 
+            self.boton_act_canal.setEnabled(True)
             self.ser.setPortName(self.port)
             self.ser.setBaudRate(self.baud_rate)
             if self.ser.open(QIODevice.ReadWrite): 
@@ -225,8 +228,8 @@ class MainWindow(WidgetsIn):
         self.brujula.setText(f"{self.cp['Brujula'][self.cp_index]}")
         self.aceleracion.setText(f"{self.cp['Aceleración en Z'][self.cp_index]}") 
         self.vel_ang_x.setText(f"{self.cp['Giro X'][self.cp_index]}")
-        self.vel_ang_y.setText(f"{self.cp['Giro y'][self.cp_index]}")
-        self.vel_ang_z.setText(f"{self.cp['Giro z'][self.cp_index]}")
+        self.vel_ang_y.setText(f"{self.cp['Giro Y'][self.cp_index]}")
+        self.vel_ang_z.setText(f"{self.cp['Giro Z'][self.cp_index]}")
         self.sensores_timer.start(500)
         
 
