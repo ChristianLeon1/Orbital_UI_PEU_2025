@@ -31,7 +31,7 @@ class WidgetsIn(QMainWindow):
                         "color: white;"
                         "selection-color: #DFDFDF;"
                         "selection-background-color: #242424")
-        self.setFixedSize(int(1920*0.9), int(1080*0.9))
+        self.resize(int(1920*0.9), int(1080*0.9))
 
         #Menubar 
         self.menubar = self.menuBar()
@@ -82,7 +82,6 @@ class WidgetsIn(QMainWindow):
         #Widgets en el toolbar 
         self.toolbar.addWidget(label_baud)
         self.toolbar.addWidget(self.baud_opts)
-        self.toolbar.addSeparator()
         self.toolbar.addWidget(label_serial) 
         self.toolbar.addWidget(self.serial_opts)
         self.toolbar.addAction(self.boton_actualizar)
@@ -92,7 +91,7 @@ class WidgetsIn(QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addWidget(label_canal)
         self.toolbar.addWidget(self.canal)
-        self.toolbar.addAction(self.boton_actualizar)
+        self.toolbar.addAction(self.boton_act_canal)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.boton_calib_altura)
         self.toolbar.addSeparator()
@@ -190,28 +189,6 @@ class WidgetsIn(QMainWindow):
         self.estado = CustomLabel(parent=self.frame_estado) 
 
         # #Tab monitor serial
-        # self.tab_serial_monitor.setStyleSheet("border-radius: 5px;")
-        # self.serial_mon_frame = CustomFrame(self.tab_serial_monitor,"#151515")
-        # self.serial_monitor = QTextEdit(self.serial_mon_frame)
-        # self.limpiar_ser_mon = QPushButton(self.serial_mon_frame)
-        # self.limpiar_ser_mon.setText("Limpiar")
-        # self.datos_a_serial = QLineEdit(self.serial_mon_frame)
-        # self.datos_a_serial.setPlaceholderText("Mensaje (Enter para enviar el mensaje)")
-        # self.datos_a_serial.setEnabled(False)
-        # self.serial_monitor.setReadOnly(True)
-        # self.serial_monitor.setStyleSheet("background: #050505;"
-        #                                   "border: 1px solid #5A5C5F;"
-        #                                   "border-radius: 5px;"
-        #                                   )
-        # self.limpiar_ser_mon.setStyleSheet("background: #111111;"
-        #                                   "border: 1px solid #5A5C5F;"
-        #                                   "border-radius: 5px;"
-        #                                   )
-        # self.datos_a_serial.setStyleSheet("background: #1D1D1D;"
-        #                                 "border: 1px solid #5A5C5F;"
-        #                                 "border-radius: 5px;"
-        #                                 )
-
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         width = self.geometry().width()
@@ -221,12 +198,6 @@ class WidgetsIn(QMainWindow):
         self.gps_frame.setGeometry(int(0.005*width), int(0.59*height), int(0.41*width), int(0.36*height))
         self.gps_w.setGeometry(int(0.02*self.gps_frame.geometry().width()), int(0.03*self.gps_frame.geometry().height()), int(0.96*self.gps_frame.geometry().width()), int(0.94*self.gps_frame.geometry().height()))
         
-        # #Monitor Serial
-        # self.serial_mon_frame.setGeometry(int(0.01*width_f), int(0.05*height_f), int(0.95*width_f), int(0.9*height_f) - 31)
-        # self.serial_monitor.setGeometry(int(self.serial_mon_frame.geometry().width()*0.01), int(self.serial_mon_frame.geometry().height()*0.05), int(self.serial_mon_frame.geometry().width()*0.98), int(self.serial_mon_frame.geometry().height()*0.85))
-        # self.limpiar_ser_mon.setGeometry(int(self.serial_mon_frame.geometry().width()*0.92), int(self.serial_mon_frame.geometry().height()*0.92), int(self.serial_mon_frame.geometry().width()*0.07), int(self.serial_mon_frame.geometry().height()*0.06))
-        # self.datos_a_serial.setGeometry(int(self.serial_mon_frame.geometry().width()*0.01), int(self.serial_mon_frame.geometry().height()*0.92), int(self.serial_mon_frame.geometry().width()*0.90), int(self.serial_mon_frame.geometry().height()*0.06))
-
         # # Gráficas 
         self.presion_frame.setGeometry(int(width*0.42), int(height*0.08), int(width*(0.24)), int(height*0.28))  
         self.temp_frame.setGeometry(int(width*0.42), int(height*(0.08 + 0.295)), int(width*(0.24)), int(height*0.28)) 

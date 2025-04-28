@@ -10,10 +10,9 @@ import sys
 import os
 import pandas as pd 
 import folium 
-from pathlib import Path
 from modules.config_widgets import *
 from modules.serial_mod import *
-from modules.distancia_coord import *
+from modules.monitor_serial import *
 from PySide6.QtCore import QIODevice, QTimer
 from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtWidgets import QApplication, QMessageBox
@@ -25,7 +24,8 @@ class MainWindow(WidgetsIn):
 
         super(MainWindow, self).__init__()          
         self.app = app 
-        self.tiempo_transcur_cp = [0]
+        self.tiempo_transcur_cp = [0] 
+        self.monitorserial = VentanaMonitorSerial(self) 
         
         self.cp = pd.DataFrame({'Paquetes':[],
                                 'Tiempo de misión':[],
@@ -67,6 +67,8 @@ class MainWindow(WidgetsIn):
         self.sensores_timer = QTimer(self)
         self.gps_timer = QTimer(self)
         self.graficas_timer = QTimer(self)
+        self.comando_timer = QTimer(self) 
+        self.comando_index = 0
         self.flag = False
         self.flag_act = True
         self.posicion = [0,0]
@@ -79,11 +81,13 @@ class MainWindow(WidgetsIn):
         self.ser = QSerialPort()        
         self.ActualizarSerial() 
         
-        # Timer temporal para translación 
-
+        # Timer para translación 
         self.simulacion_timer = QTimer(self)
         self.simulacion_timer.timeout.connect(self.RotarModelo3D)
         self.rotacion = 0 
+
+        #Timer comando 
+        self.comando_timer.timeout.connect(self.EnviarComandos)
 
         # Señales 
         #Botones 
@@ -96,13 +100,10 @@ class MainWindow(WidgetsIn):
         # Menubar
         self.salir_app.triggered.connect(self.SalirApp) 
         self.guardar_csv.triggered.connect(self.GuardarCSV)
+        self.abrir_serial_monitor.triggered.connect(self.AbrirMonitorSerial)
         #Puerto serial
         self.ser.readyRead.connect(self.LeerDatos)
-        
-        #Monitor serial 
-        # self.limpiar_ser_mon.clicked.connect(self.LimpiarSerial)
-        # self.datos_a_serial.returnPressed.connect(self.EnviarSerial)
-    
+            
         #Actualización de datos de los sensores
         self.sensores_timer.timeout.connect(self.ActualizarSensores)
         self.gps_timer.timeout.connect(self.ActualizarGPS)        
@@ -115,36 +116,50 @@ class MainWindow(WidgetsIn):
         self.boton_calib_altura.triggered.connect(self.CalibAltura)
         self.boton_act_canal.triggered.connect(self.ActualizarCanal)
 
+    # Monitor Serial ----------------------------------------------------------------------
 
-    def RotarModelo3D(self): 
-        self.ventana_3d.set_rotation(self.cp["Ángulo X"][self.cp_index],self.cp["Ángulo Y"][self.cp_index],self.cp["Ángulo Z"][self.cp_index]) 
-        self.simulacion_timer.start(33)
+    def AbrirMonitorSerial(self):
+        self.monitorserial.show()
 
-    # Configuraciones iniciales 
+    # Comandos del satélite ---------------------------------------------------------------
 
-    def EnviarComandos(self, texto: str): 
+    def EnviarComandos(self): 
+        if self.comando_index >= 10: 
+            self.comando_index = 0 
+            self.statusBar().showMessage(f'Se envió correctamente el comando.', 10000)  
+            self.comando_timer.stop()
+            return 
+
         try: 
-            for _ in range(10): 
-                self.ser.write(texto.encode("utf-8"))
+            self.comando_index += 1 
+            self.texto = self.texto 
+            self.ser.write(self.texto.encode("utf-8"))
+            print(self.texto.encode("utf-8")) 
         except: 
             self.statusBar().showMessage(f'No se envió correctamente el comando.', 10000)
 
+        self.comando_timer.start(100)
+
     def ActivarServo(self): 
-        self.EnviarComandos("10")
+        self.texto = "10\n"
         self.boton_conec_ser.setEnabled(False)
         self.boton_des_servo.setEnabled(True)
+        self.EnviarComandos()
         
     def DesactivarServo(self):
-        self.EnviarComandos("20") 
+        self.texto = "20\n"
         self.boton_conec_ser.setEnabled(True)
         self.boton_des_servo.setEnabled(False)
+        self.EnviarComandos() 
 
     def IniciarTiempoVuelo(self): 
-        self.EnviarComandos("30")
+        self.texto = "30\n"
         self.boton_tiempo_vuelo.setEnabled(False)
+        self.EnviarComandos()
 
     def CalibAltura(self): 
-        self.EnviarComandos("40")
+        self.texto = "40\n"
+        self.EnviarComandos()
     
     def ActualizarCanal(self): 
         if not self.canal.text().isdigit(): 
@@ -152,9 +167,12 @@ class MainWindow(WidgetsIn):
             return 
 
         if not (0 <= int(self.canal.text()) and int(self.canal.text()) <= 126): 
-            self.statusBar().showMessage(f'Seleccione un canal válido (0 - 126)', 10000) 
+            self.statusBar().showMessage(f'Seleccione un canal válido (0 - 126)', 10000)
+        
+        self.texto = self.canal.text() + "\n"
+        self.EnviarComandos() 
 
-        self.EnviarComandos(self.canal.text())
+    # Configuración puerto serial ---------------------------------------------------------
         
     def GuardarBaudRate(self,text):
         self.baud_rate = int(text)
@@ -189,107 +207,27 @@ class MainWindow(WidgetsIn):
                 self.statusBar().showMessage(f'Conectado al puerto {self.port}', 10000)
                 self.boton_conec_ser.setEnabled(False)
                 self.boton_descon.setEnabled(True)
+                # Monitor serial 
+                self.monitorserial.datos_a_serial.setEnabled(True) 
+                self.monitorserial.LimpiarSerial()
+
             else: 
                 self.statusBar().showMessage(f'No se pudo conectar al puerto{self.port}', 10000)
         else: 
-            self.statusBar().showMessage(f'No se pudo conectar al puerto {self.port}', 10000)
+            self.statusBar().showMessage(f'No se pudo conectar al puerto {self.port}', 10000) 
 
-    def EnviarSerial(self):
-        # texto = self.datos_a_serial.text().encode("utf-8")
-        # self.datos_a_serial.setText("")
-        # self.ser.write(texto) 
-        pass # Falta habilitar el monitor serial 
-
-    def LimpiarSerial(self): 
-        # self.serial_monitor.setText("") 
-        pass
-
-    def ActualizarGPS(self):
-
-        if not (self.posicion[0] == self.cp['Latitud'][self.cp_index] and self.posicion[1] == self.cp['Longitud'][self.cp_index]):
-            self.posicion = [self.cp['Latitud'][self.cp_index], self.cp['Longitud'][self.cp_index]]
-            self.maps = folium.Map(location=self.posicion, zoom_start=18,
-                                   tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                                   attr='Esri World Imagery'
-                                   )
-            folium.CircleMarker(location=self.posicion, radius=6, color="red", fill=True, border=True, opacity=1).add_to(self.maps)
-            self.gps_w.setHtml(self.maps.get_root().render())
-        self.gps_timer.start(4007)
-
-    def ActualizarSensores(self): 
-        #Identificadores
-        self.hora.setText(f"{self.cp['Hora'][self.cp_index]}")
-        self.contador_paquetes.setText(f"{self.cp['Paquetes'][self.cp_index]}")
-        self.tiempo_vuelo.setText(f"{self.cp['Tiempo de misión'][self.cp_index]}")
-
-        #Mensajes de sensores 
-        self.estado.setText(f"{self.cp['Estado de la misión'][self.cp_index]}") 
-        self.bateria.setText(f"{self.cp['Bateria'][self.cp_index]}") 
-        self.brujula.setText(f"{self.cp['Brujula'][self.cp_index]}")
-        self.aceleracion.setText(f"{self.cp['Aceleración en Z'][self.cp_index]}") 
-        self.vel_ang_x.setText(f"{self.cp['Giro X'][self.cp_index]}")
-        self.vel_ang_y.setText(f"{self.cp['Giro Y'][self.cp_index]}")
-        self.vel_ang_z.setText(f"{self.cp['Giro Z'][self.cp_index]}")
-        self.sensores_timer.start(500)
-        
-
-
-    def ActualizarGraficas(self):
-        if not self.cp['Tiempo de misión'][self.cp_index] < self.graf_x: 
-            self.graf_x += 15
-            self.temp.setXRange(self.graf_x - 15, self.graf_x)
-            self.carbono.setXRange(self.graf_x - 15, self.graf_x)
-            self.presion.setXRange(self.graf_x - 15, self.graf_x)  
-            self.graficas = pd.DataFrame({'Tiempo': [],
-                                          'CO2': [],
-                                          'Presión':[], 
-                                          'Temperatura':[]})
-        new_row = {
-                  'Tiempo': self.cp['Tiempo de misión'][self.cp_index],
-                  'CO2': self.cp['CO2'][self.cp_index],
-                  'Presión': self.cp['Presión'][self.cp_index], 
-                  'Temperatura': self.cp['Temperatura'][self.cp_index]
-                   }
-
-        self.graficas = pd.concat([self.graficas, pd.DataFrame([new_row])], ignore_index=True)
-
-        self.carbono.data.setData(self.graficas['Tiempo'], self.graficas['CO2'])
-        self.temp.data.setData(self.graficas['Tiempo'], self.graficas['Temperatura'])
-        self.presion.data.setData(self.graficas['Tiempo'], self.graficas['Presión'])
-        self.altura_cp.altura.setText(f"{self.cp['Altitud'][self.cp_index]} m")
-        self.acelerometro.updateValue(self.cp['Aceleración en Z'][self.cp_index])
-        self.brujula_widget.updateValue(self.cp['Brujula'][self.cp_index])
-        if 0 <=  self.cp['Altitud'][self.cp_index] or  self.cp['Altitud'][self.cp_index] <= 500:
-            self.altura_cp.bar.setValue(int(self.cp['Altitud'][self.cp_index]))
-        else: 
-            self.altura_cp.bar.setValue(500) 
-        
-        if self.cp['Velocidad'][self.cp_index] == 0: 
-            self.velocidad.setText(f"0.0")
-            self.velocimetro.updateValue(0) 
-        else: 
-            self.velocidad.setText(f"{self.cp['Velocidad'][self.cp_index]}") 
-            self.velocimetro.updateValue(abs(self.cp['Velocidad'][self.cp_index]))
-        
-        self.graficas_timer.start(100)
-
-    def CalculoVelocidad(self): 
-        try: 
-            if self.cp_index > 20:  
-                velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) /
-                                  (self.cp['Tiempo de misión'][self.cp_index - 20] - self.cp['Tiempo de misión'][self.cp_index]), 2) 
-                return velocidad
-            else: 
-                return 0.0
-        except: 
-            return 0.0 
-
-        
     def LeerDatos(self): 
         if not self.ser.canReadLine(): 
             return 
         try:  
-            new_row = str(self.ser.readLine(),'utf-8')            
+            new_row = str(self.ser.readLine(),'utf-8')   
+            
+            #Mostrar en el monitor serial  
+
+            if self.monitorserial.isVisible(): 
+                self.monitorserial.texto_monitor_serial.append(new_row)
+                
+
             new_row = new_row.strip("\n").split(',')
             if len(new_row) != 23: 
                 return 
@@ -364,6 +302,94 @@ class MainWindow(WidgetsIn):
         if self.ser.isOpen: 
             self.ser.close()
             self.statusBar().showMessage(f'Se desconecto correctamente el puerto {self.port}', 10000)
+
+
+    # Métodos GPS, gráficas y sensores ----------------------------------------------------
+
+    def CalculoVelocidad(self): 
+        try: 
+            if self.cp_index > 20:  
+                velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) /
+                                  (self.cp['Tiempo de misión'][self.cp_index - 20] - self.cp['Tiempo de misión'][self.cp_index]), 2) 
+                return velocidad
+            else: 
+                return 0.0
+        except: 
+            return 0.0 
+
+    def ActualizarGPS(self):
+
+        if not (self.posicion[0] == self.cp['Latitud'][self.cp_index] and self.posicion[1] == self.cp['Longitud'][self.cp_index]):
+            self.posicion = [self.cp['Latitud'][self.cp_index], self.cp['Longitud'][self.cp_index]]
+            self.maps = folium.Map(location=self.posicion, zoom_start=18,
+                                   tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                                   attr='Esri World Imagery'
+                                   )
+            folium.CircleMarker(location=self.posicion, radius=6, color="red", fill=True, border=True, opacity=1).add_to(self.maps)
+            self.gps_w.setHtml(self.maps.get_root().render())
+        self.gps_timer.start(4007)
+
+    def ActualizarSensores(self): 
+        #Identificadores
+        self.hora.setText(f"{self.cp['Hora'][self.cp_index]}")
+        self.contador_paquetes.setText(f"{self.cp['Paquetes'][self.cp_index]}")
+        self.tiempo_vuelo.setText(f"{self.cp['Tiempo de misión'][self.cp_index]}")
+
+        #Mensajes de sensores 
+        self.estado.setText(f"{self.cp['Estado de la misión'][self.cp_index]}") 
+        self.bateria.setText(f"{self.cp['Bateria'][self.cp_index]}") 
+        self.brujula.setText(f"{self.cp['Brujula'][self.cp_index]}")
+        self.aceleracion.setText(f"{self.cp['Aceleración en Z'][self.cp_index]}") 
+        self.vel_ang_x.setText(f"{self.cp['Giro X'][self.cp_index]}")
+        self.vel_ang_y.setText(f"{self.cp['Giro Y'][self.cp_index]}")
+        self.vel_ang_z.setText(f"{self.cp['Giro Z'][self.cp_index]}")
+        self.sensores_timer.start(500)
+
+    def ActualizarGraficas(self):
+        if not self.cp['Tiempo de misión'][self.cp_index] < self.graf_x: 
+            self.graf_x += 15
+            self.temp.setXRange(self.graf_x - 15, self.graf_x)
+            self.carbono.setXRange(self.graf_x - 15, self.graf_x)
+            self.presion.setXRange(self.graf_x - 15, self.graf_x)  
+            self.graficas = pd.DataFrame({'Tiempo': [],
+                                          'CO2': [],
+                                          'Presión':[], 
+                                          'Temperatura':[]})
+        new_row = {
+                  'Tiempo': self.cp['Tiempo de misión'][self.cp_index],
+                  'CO2': self.cp['CO2'][self.cp_index],
+                  'Presión': self.cp['Presión'][self.cp_index], 
+                  'Temperatura': self.cp['Temperatura'][self.cp_index]
+                   }
+
+        self.graficas = pd.concat([self.graficas, pd.DataFrame([new_row])], ignore_index=True)
+
+        self.carbono.data.setData(self.graficas['Tiempo'], self.graficas['CO2'])
+        self.temp.data.setData(self.graficas['Tiempo'], self.graficas['Temperatura'])
+        self.presion.data.setData(self.graficas['Tiempo'], self.graficas['Presión'])
+        self.altura_cp.altura.setText(f"{self.cp['Altitud'][self.cp_index]} m")
+        self.acelerometro.updateValue(self.cp['Aceleración en Z'][self.cp_index])
+        self.brujula_widget.updateValue(self.cp['Brujula'][self.cp_index])
+        if 0 <=  self.cp['Altitud'][self.cp_index] or  self.cp['Altitud'][self.cp_index] <= 500:
+            self.altura_cp.bar.setValue(int(self.cp['Altitud'][self.cp_index]))
+        else: 
+            self.altura_cp.bar.setValue(500) 
+        
+        if self.cp['Velocidad'][self.cp_index] == 0: 
+            self.velocidad.setText(f"0.0")
+            self.velocimetro.updateValue(0) 
+        else: 
+            self.velocidad.setText(f"{self.cp['Velocidad'][self.cp_index]}") 
+            self.velocimetro.updateValue(abs(self.cp['Velocidad'][self.cp_index]))
+        
+        self.graficas_timer.start(200) 
+
+    def RotarModelo3D(self): 
+        self.ventana_3d.set_rotation(self.cp["Ángulo X"][self.cp_index],self.cp["Ángulo Z"][self.cp_index],self.cp["Ángulo Y"][self.cp_index]) 
+        self.simulacion_timer.start(33)
+
+
+    # Configuración ventana principal --------------------------------------------------
 
     def GuardarCSV(self):  
         if len(self.cp.index) > 1: 
