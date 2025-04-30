@@ -9,7 +9,8 @@
 import sys 
 import os
 import pandas as pd 
-import folium 
+import folium
+from pandas.core.dtypes.dtypes import np 
 from modules.config_widgets import *
 from modules.serial_mod import *
 from modules.monitor_serial import *
@@ -261,15 +262,25 @@ class MainWindow(WidgetsIn):
                 'Humedad': new_row[22], 
                 'Velocidad': str(self.CalculoVelocidad())
             } 
+                
+            new_row["Hora"] = f'{new_row["Hora"][0:2]}:{new_row["Hora"][2:4]}:{new_row["Hora"][4:6]}' 
+
+            if new_row["Servo"] == "1": 
+                new_row["Servo"] = "Activado" 
+            elif new_row["Servo"] == "0":
+                new_row["Servo"] = "Desactivado"
+
+            if not 0 <= float(new_row["Altitud"]) and float(new_row["Altitud"]) <= 500: 
+                new_row["Altitud"] = 0 
+
+            #Estado de la misión
+            # new_row["Estado de la misión"]   
 
             for i in self.cp.columns: 
-                if new_row[i].isdigit(): 
-                    new_row[i] = int(new_row[i]) 
-                else: 
-                    try: 
-                        new_row[i] = float(new_row[i])
-                    except: 
-                        pass  
+                try: 
+                    new_row[i] = np.float64(new_row[i])
+                except: 
+                    pass  
             
             # Conversiones. 
             new_row["Aceleración en X"] = round(new_row["Aceleración en X"] * 9.81, 3)
@@ -283,6 +294,7 @@ class MainWindow(WidgetsIn):
                 self.tiempo_inic = time.time() 
 
             self.cp_index = len(self.cp.index) - 1
+            self.cp["Paquetes"] = np.int64(self.cp["Paquetes"])
             
             if (self.cp_index !=-1) and self.flag_act: 
                 self.ActualizarGPS()
@@ -291,6 +303,7 @@ class MainWindow(WidgetsIn):
                 self.RotarModelo3D()
                 self.flag_act = False
         except Exception as e: 
+            # print(e)
             pass 
 
     def DescPort(self): 
@@ -307,15 +320,17 @@ class MainWindow(WidgetsIn):
     # Métodos GPS, gráficas y sensores ----------------------------------------------------
 
     def CalculoVelocidad(self): 
+
+        if self.cp_index < 20: 
+            return 0.0
+        if self.cp["Tiempo de misión"][self.cp_index - 20] == self.cp["Tiempo de misión"][self.cp_index]: 
+            return self.cp["Velocidad"][self.cp_index - 1] 
         try: 
-            if self.cp_index > 20:  
-                velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) /
-                                  (self.cp['Tiempo de misión'][self.cp_index - 20] - self.cp['Tiempo de misión'][self.cp_index]), 2) 
-                return velocidad
-            else: 
-                return 0.0
+            velocidad = round((self.cp['Altitud'][self.cp_index - 20] - self.cp['Altitud'][self.cp_index]) /
+                              (self.cp['Tiempo de misión'][self.cp_index - 20] - self.cp['Tiempo de misión'][self.cp_index]), 2) 
+            return velocidad
         except: 
-            return 0.0 
+            return self.cp["Velocidad"][self.cp_index - 1]
 
     def ActualizarGPS(self):
 
@@ -343,6 +358,7 @@ class MainWindow(WidgetsIn):
         self.vel_ang_x.setText(f"{self.cp['Giro X'][self.cp_index]}")
         self.vel_ang_y.setText(f"{self.cp['Giro Y'][self.cp_index]}")
         self.vel_ang_z.setText(f"{self.cp['Giro Z'][self.cp_index]}")
+        self.humedad.setText(f"{self.cp['Humedad'][self.cp_index]}")
         self.sensores_timer.start(500)
 
     def ActualizarGraficas(self):
@@ -414,7 +430,7 @@ class MainWindow(WidgetsIn):
         return msg_box.exec()
 
 if __name__ == "__main__": 
-    os.environ["QT3D_RENDER"] = "opengl"
+    os.environ["QT3D_RENDERER"] = "opengl"  # Fuerza OpenGL
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
