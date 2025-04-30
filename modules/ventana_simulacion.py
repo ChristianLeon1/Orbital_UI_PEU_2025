@@ -1,7 +1,6 @@
 from pathlib import Path
-from PySide6.QtCore import QUrl, Qt, QPropertyAnimation
+from PySide6.QtCore import QUrl
 from PySide6.QtGui import QVector3D, QColor, QQuaternion
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 from PySide6.Qt3DCore import Qt3DCore
 from PySide6.Qt3DRender import Qt3DRender
 from PySide6.Qt3DExtras import Qt3DExtras
