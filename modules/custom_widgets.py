@@ -54,10 +54,10 @@ class AltitudeWidget(QFrame):
         self.autogiro_marca = CustomFrame(self.frame, "white")
         self.drone_marca = CustomFrame(self.frame, "white")
         self.max_marca = CustomFrame(self.frame, "white")
-        self.piso_label = CustomLabel("0 m", self.frame, 12, "#151515",Qt.AlignLeft) 
-        self.autogiro_label = CustomLabel("200 m", self.frame, 12, "#151515", Qt.AlignLeft)
-        self.drone_label = CustomLabel("450 m", self.frame, 12, "#151515", Qt.AlignLeft)
-        self.max_label = CustomLabel("500 m", self.frame, 12, "#151515", Qt.AlignLeft)
+        self.piso_label = CustomLabel("0 m", self.frame, 10, "#151515",Qt.AlignLeft) 
+        self.autogiro_label = CustomLabel("200 m", self.frame, 10, "#151515", Qt.AlignLeft)
+        self.drone_label = CustomLabel("450 m", self.frame, 10, "#151515", Qt.AlignLeft)
+        self.max_label = CustomLabel("500 m", self.frame, 10, "#151515", Qt.AlignLeft)
 
     def Resize(self):
         width_f, height_f = self.frame.geometry().width(), self.frame.geometry().height()

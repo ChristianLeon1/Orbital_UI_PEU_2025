@@ -42,6 +42,7 @@ class WidgetsIn(QMainWindow):
         self.salir_app.setShortcut(QKeySequence("Ctrl+q"))
         self.ventanas_menu = self.menubar.addMenu("Herramientas") 
         self.abrir_serial_monitor = self.ventanas_menu.addAction("Monitor Serial")
+        self.config_3d_model = self.ventanas_menu.addAction("Configuración del modelo 3D")
 
         #Toolbar 
         self.toolbar = QToolBar("Herramientas") 
@@ -68,8 +69,8 @@ class WidgetsIn(QMainWindow):
         self.boton_actualizar = QAction("Actualizar Puertos")
         self.boton_conec_ser = QAction("Conectar")
         self.boton_descon = QAction("Desconectar")
-        self.boton_act_servo = QAction("Activar Servo")
-        self.boton_des_servo = QAction("Desactivar Servo")
+        self.boton_act_servo = QAction("Cerrar Servo")
+        self.boton_des_servo = QAction("Abrir Servo")
         self.boton_calib_altura = QAction("Calibrar Altura")
         self.boton_tiempo_vuelo = QAction("Comenzar Tiempo de Vuelo")
         self.boton_act_canal = QAction("Actualizar Canal")

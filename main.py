@@ -13,7 +13,8 @@ import folium
 from pandas.core.dtypes.dtypes import np 
 from modules.config_widgets import *
 from modules.serial_mod import *
-from modules.monitor_serial import *
+from modules.monitor_serial import * 
+from modules.config_3dmodel import *
 from PySide6.QtCore import QIODevice, QTimer
 from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtWidgets import QApplication, QMessageBox
@@ -25,8 +26,15 @@ class MainWindow(WidgetsIn):
 
         super(MainWindow, self).__init__()          
         self.app = app 
-        self.tiempo_transcur_cp = [0] 
+
+        # self.config_ejes = ConfigEjes() 
+
+        self.eje_x = {'Eje': 'Ángulo X', 'Invertir':1, 'Calibración':0} 
+        self.eje_y = {'Eje': 'Ángulo X', 'Invertir':1, 'Calibración':0} 
+        self.eje_z = {'Eje': 'Ángulo X', 'Invertir':1, 'Calibración':0} 
+
         self.monitorserial = VentanaMonitorSerial(self) 
+        self.ventana_config3d = VentanaConfig3D(self)
         
         self.cp = pd.DataFrame({'Paquetes':[],
                                 'Tiempo de misión':[],
@@ -101,7 +109,8 @@ class MainWindow(WidgetsIn):
         # Menubar
         self.salir_app.triggered.connect(self.SalirApp) 
         self.guardar_csv.triggered.connect(self.GuardarCSV)
-        self.abrir_serial_monitor.triggered.connect(self.AbrirMonitorSerial)
+        self.abrir_serial_monitor.triggered.connect(self.AbrirMonitorSerial) 
+        self.config_3d_model.triggered.connect(self.AbrirConfig3DModel)
         #Puerto serial
         self.ser.readyRead.connect(self.LeerDatos)
             
@@ -122,6 +131,9 @@ class MainWindow(WidgetsIn):
     def AbrirMonitorSerial(self):
         self.monitorserial.show()
 
+    def AbrirConfig3DModel(self): 
+        self.ventana_config3d.show()
+
     # Comandos del satélite ---------------------------------------------------------------
 
     def EnviarComandos(self): 
@@ -135,7 +147,6 @@ class MainWindow(WidgetsIn):
             self.comando_index += 1 
             self.texto = self.texto 
             self.ser.write(self.texto.encode("utf-8"))
-            print(self.texto.encode("utf-8")) 
         except: 
             self.statusBar().showMessage(f'No se envió correctamente el comando.', 10000)
 
@@ -273,9 +284,6 @@ class MainWindow(WidgetsIn):
             if not 0 <= float(new_row["Altitud"]) and float(new_row["Altitud"]) <= 500: 
                 new_row["Altitud"] = 0 
 
-            #Estado de la misión
-            # new_row["Estado de la misión"]   
-
             for i in self.cp.columns: 
                 try: 
                     new_row[i] = np.float64(new_row[i])
@@ -303,7 +311,6 @@ class MainWindow(WidgetsIn):
                 self.RotarModelo3D()
                 self.flag_act = False
         except Exception as e: 
-            # print(e)
             pass 
 
     def DescPort(self): 
@@ -398,11 +405,14 @@ class MainWindow(WidgetsIn):
             self.velocidad.setText(f"{self.cp['Velocidad'][self.cp_index]}") 
             self.velocimetro.updateValue(abs(self.cp['Velocidad'][self.cp_index]))
         
-        self.graficas_timer.start(200) 
+        self.graficas_timer.start(60) 
 
     def RotarModelo3D(self): 
-        self.ventana_3d.set_rotation(self.cp["Ángulo X"][self.cp_index],self.cp["Ángulo Z"][self.cp_index],self.cp["Ángulo Y"][self.cp_index]) 
-        self.simulacion_timer.start(33)
+        eje_x = self.eje_x['Invertir'] * self.cp[self.eje_x['Eje']][self.cp_index] - self.eje_x['Calibración']
+        eje_y = self.eje_y['Invertir'] * self.cp[self.eje_y['Eje']][self.cp_index] - self.eje_y['Calibración']
+        eje_z = self.eje_z['Invertir'] * self.cp[self.eje_z['Eje']][self.cp_index] - self.eje_z['Calibración']
+        self.ventana_3d.set_rotation(eje_x, eje_y, eje_z) 
+        self.simulacion_timer.start(53)
 
 
     # Configuración ventana principal --------------------------------------------------
