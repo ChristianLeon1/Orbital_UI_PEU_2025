@@ -33,6 +33,8 @@ class MainWindow(WidgetsIn):
         self.eje_y = {'Eje': 'Ángulo X', 'Invertir':1, 'Calibración':0} 
         self.eje_z = {'Eje': 'Ángulo X', 'Invertir':1, 'Calibración':0} 
 
+        self.estado_anterior = ""
+
         self.monitorserial = VentanaMonitorSerial(self) 
         self.ventana_config3d = VentanaConfig3D(self)
         
@@ -284,6 +286,13 @@ class MainWindow(WidgetsIn):
             if not 0 <= float(new_row["Altitud"]) and float(new_row["Altitud"]) <= 500: 
                 new_row["Altitud"] = 0 
 
+            if new_row["Estado de la misión"] == "0":
+                new_row["Estado de la misión"] = "Misión Iniciada"
+            elif new_row["Estado de la misión"] == "1": 
+                new_row["Estado de la misión"] = "Sistema de Autogiro Activado"
+            elif new_row["Estado de la misión"] == "4": 
+                new_row["Sistema de autogiro Desplegado"]
+
             for i in self.cp.columns: 
                 try: 
                     new_row[i] = np.float64(new_row[i])
@@ -358,7 +367,6 @@ class MainWindow(WidgetsIn):
         self.tiempo_vuelo.setText(f"{self.cp['Tiempo de misión'][self.cp_index]}")
 
         #Mensajes de sensores 
-        self.estado.setText(f"{self.cp['Estado de la misión'][self.cp_index]}") 
         self.bateria.setText(f"{self.cp['Bateria'][self.cp_index]}") 
         self.brujula.setText(f"{self.cp['Brujula'][self.cp_index]}")
         self.aceleracion.setText(f"{self.cp['Aceleración en Z'][self.cp_index]}") 
@@ -404,7 +412,28 @@ class MainWindow(WidgetsIn):
         else: 
             self.velocidad.setText(f"{self.cp['Velocidad'][self.cp_index]}") 
             self.velocimetro.updateValue(abs(self.cp['Velocidad'][self.cp_index]))
+
         
+        if self.estado_anterior != self.cp['Estado de la misión'][self.cp_index]: 
+            self.estado_anterior = self.cp['Estado de la misión'][self.cp_index]
+            self.estado.setText(self.estado_anterior)  
+            if self.estado.text() == "Misión Iniciada": 
+                self.estado.setStyleSheet("background: yellow;"
+                                          "color: black;"
+                                          "font-size: 16px;"
+                                          "font-weight: bold;") 
+            elif self.estado.text() == "Misión Iniciada": 
+                self.estado.setStyleSheet("background: red;"
+                                          "color: white;"
+                                          "font-size: 16px;"
+                                          "font-weight: bold;") 
+            elif self.estado.text() == "Misión Iniciada": 
+                self.estado.setStyleSheet("background: green;"
+                                          "color: white;"
+                                          "font-size: 16px;"
+                                          "font-weight: bold;") 
+
+
         self.graficas_timer.start(60) 
 
     def RotarModelo3D(self): 
