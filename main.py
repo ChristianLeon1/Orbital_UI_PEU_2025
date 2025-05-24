@@ -286,12 +286,16 @@ class MainWindow(WidgetsIn):
             if not 0 <= float(new_row["Altitud"]) and float(new_row["Altitud"]) <= 500: 
                 new_row["Altitud"] = 0 
 
-            if new_row["Estado de la misión"] == "0":
-                new_row["Estado de la misión"] = "Misión Iniciada"
-            elif new_row["Estado de la misión"] == "1": 
-                new_row["Estado de la misión"] = "Sistema de Autogiro Activado"
-            elif new_row["Estado de la misión"] == "4": 
-                new_row["Sistema de autogiro Desplegado"]
+            try:
+                new_row["Estado de la misión"] = int(new_row["Estado de la misión"])
+                if new_row["Estado de la misión"] == 0:
+                    new_row["Estado de la misión"] = "Misión Iniciada"
+                elif new_row["Estado de la misión"] == 1: 
+                    new_row["Estado de la misión"] = "Sistema de Autogiro Activado"
+                elif new_row["Estado de la misión"] == 4: 
+                    new_row["Sistema de autogiro Desplegado"]
+            except Exception as e:  
+                print(e)
 
             for i in self.cp.columns: 
                 try: 
@@ -420,17 +424,17 @@ class MainWindow(WidgetsIn):
             if self.estado.text() == "Misión Iniciada": 
                 self.estado.setStyleSheet("background: yellow;"
                                           "color: black;"
-                                          "font-size: 16px;"
+                                          "font-size: 15px;"
                                           "font-weight: bold;") 
-            elif self.estado.text() == "Misión Iniciada": 
+            elif self.estado.text() == "Sistema de Autogiro Activado": 
                 self.estado.setStyleSheet("background: red;"
                                           "color: white;"
-                                          "font-size: 16px;"
+                                          "font-size: 15px;"
                                           "font-weight: bold;") 
-            elif self.estado.text() == "Misión Iniciada": 
+            elif self.estado.text() == "Sistema de Autogiro Desplegado": 
                 self.estado.setStyleSheet("background: green;"
                                           "color: white;"
-                                          "font-size: 16px;"
+                                          "font-size: 15px;"
                                           "font-weight: bold;") 
 
 

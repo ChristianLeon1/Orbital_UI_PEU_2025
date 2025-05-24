@@ -130,23 +130,23 @@ class VentanaConfig3D(QWidget):
 
         if self.selector_eje_x.currentIndex == 0: 
             self.main_window.eje_x['Eje'] = 'Ángulo X'
-        elif self.selector_eje_x.currentIndex == 0: 
+        elif self.selector_eje_x.currentIndex == 1: 
             self.main_window.eje_x['Eje'] = 'Ángulo Y'
-        elif self.selector_eje_x.currentIndex == 0: 
+        elif self.selector_eje_x.currentIndex == 2: 
             self.main_window.eje_x['Eje'] = 'Ángulo Z'
 
         if self.selector_eje_y.currentIndex == 0: 
             self.main_window.eje_y['Eje'] = 'Ángulo X'
-        elif self.selector_eje_y.currentIndex == 0: 
+        elif self.selector_eje_y.currentIndex == 1: 
             self.main_window.eje_y['Eje'] = 'Ángulo Y'
-        elif self.selector_eje_y.currentIndex == 0: 
+        elif self.selector_eje_y.currentIndex == 2: 
             self.main_window.eje_y['Eje'] = 'Ángulo Z'
 
         if self.selector_eje_z.currentIndex == 0: 
             self.main_window.eje_z['Eje'] = 'Ángulo X'
-        elif self.selector_eje_z.currentIndex == 0: 
+        elif self.selector_eje_z.currentIndex == 1: 
             self.main_window.eje_z['Eje'] = 'Ángulo Y'
-        elif self.selector_eje_z.currentIndex == 0: 
+        elif self.selector_eje_z.currentIndex == 2: 
             self.main_window.eje_z['Eje'] = 'Ángulo Z'
 
 
