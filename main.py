@@ -18,50 +18,6 @@ from modules.config_3dmodel import *
 from PySide6.QtCore import QIODevice, QTimer, QThread, Signal
 from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtWidgets import QApplication, QMessageBox 
-
-class SerialThread(QThread):
-    data_received = Signal(bytes)
-    connection_changed = Signal(bool)
-    error_occurred = Signal(str)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.serial = QSerialPort()
-        self.running = False
-        self.port_name = ""
-        self.baud_rate = 0
-
-    def run(self):
-        if not self.serial.open(QIODevice.ReadWrite):
-            self.error_occurred.emit(f"Error opening port: {self.serial.errorString()}")
-            return
-
-        self.running = True
-        self.connection_changed.emit(True)
-        
-        while self.running:
-            if self.serial.waitForReadyRead(30):
-                data = self.serial.readAll()
-                self.data_received.emit(data.data())
-
-    def connect_serial(self, port, baud):
-        self.port_name = port
-        self.baud_rate = baud
-        self.serial.setPortName(port)
-        self.serial.setBaudRate(baud)
-        self.start()
-
-    def disconnect_serial(self):
-        self.running = False
-        if self.serial.isOpen():
-            self.serial.close()
-        self.connection_changed.emit(False)
-        self.wait(1000)
-
-    def write_data(self, data):
-        if self.serial.isOpen():
-            self.serial.write(data.encode())
-
 import time
 
 class MainWindow(WidgetsIn): 
