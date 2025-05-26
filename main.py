@@ -276,7 +276,7 @@ class MainWindow(WidgetsIn):
                 'Velocidad': str(self.CalculoVelocidad())
             } 
                 
-            new_row["Hora"] = f'{new_row["Hora"][0:2]}:{new_row["Hora"][2:4]}:{new_row["Hora"][4:6]}' 
+            new_row["Hora"] = f'{new_row["Hora"][0:3]}:{new_row["Hora"][3:5]}:{new_row["Hora"][5:]}' 
 
             if new_row["Servo"] == "1": 
                 new_row["Servo"] = "Activado" 
