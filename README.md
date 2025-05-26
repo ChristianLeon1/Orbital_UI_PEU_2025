@@ -4,7 +4,7 @@
 ![PySide](https://img.shields.io/badge/PySide-6.0-green)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-orange)
 
-<span>![alt text]()</span> 
+<span>![alt text](https://github.com/ChristianLeon1/Orbital_UI_PEU_2025/blob/main/extras/images/2025-05-24_12-38.png)</span> 
 
 Aplicación de estación terrena en Python para recibir y visualizar datos de satélites. Desarrollada con PySide6 para la interfaz gráfica y compatible con Windows y Linux.
 
