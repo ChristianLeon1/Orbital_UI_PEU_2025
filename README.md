@@ -1,8 +1,10 @@
 # Orbital_UI_PEU_2025 
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![PySide](https://img.shields.io/badge/PySide-6.0-green)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-orange)
+
+<span>![alt text]()</span> 
 
 Aplicación de estación terrena en Python para recibir y visualizar datos de satélites. Desarrollada con PySide6 para la interfaz gráfica y compatible con Windows y Linux.
 
@@ -15,7 +17,7 @@ Aplicación de estación terrena en Python para recibir y visualizar datos de sa
 - Compatibilidad multiplataforma.
 
 ## Requisitos
-- Python 3.8 o superior
+- Python 3.11 o superior
 - Sistema operativo Windows 10+ o Linux (Ubuntu/Debian recomendado)
 - Acceso al puerto serial (permisos adecuados en Linux)
 
