@@ -19,6 +19,8 @@ from PySide6.QtCore import QIODevice, QTimer, QThread, Signal
 from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtWidgets import QApplication, QMessageBox 
 import time
+import pytz  # Necesitas instalar: pip install pytz
+from datetime import datetime
 
 class MainWindow(WidgetsIn): 
 
@@ -252,11 +254,14 @@ class MainWindow(WidgetsIn):
             new_row = {
                 'Paquetes': new_row[0],
                 'Tiempo de misión': new_row[1],
-                'Hora':new_row[2],
+                'Hora': datetime.now(pytz.utc).astimezone(pytz.timezone("America/Mexico_City")).strftime("%H:%M:%S"),
+                # 'Hora':new_row[2],
                 'Estado de la misión': new_row[3],
                 'Servo': new_row[4], 
-                'Latitud': new_row[5],
-                'Longitud': new_row[6],
+                # 'Latitud': new_row[5],
+                'Latitud': 19.4388246,
+                'Longitud': -99.1379803,
+                # 'Longitud': new_row[6],
                 'Temperatura': new_row[7],
                 'Presión': new_row[8],
                 'Altitud': new_row[9],
@@ -276,7 +281,7 @@ class MainWindow(WidgetsIn):
                 'Velocidad': str(self.CalculoVelocidad())
             } 
                 
-            new_row["Hora"] = f'{new_row["Hora"][0:3]}:{new_row["Hora"][3:5]}:{new_row["Hora"][5:]}' 
+            # new_row["Hora"] = f'{new_row["Hora"][0:3]}:{new_row["Hora"][3:5]}:{new_row["Hora"][5:]}' 
 
             if new_row["Servo"] == "1": 
                 new_row["Servo"] = "Activado" 
